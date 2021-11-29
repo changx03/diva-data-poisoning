@@ -4,24 +4,18 @@ import argparse
 import glob
 import os
 import time
-import warnings
 
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from scipy.optimize import linprog
-from sklearn import datasets
-from sklearn.model_selection import RandomizedSearchCV, train_test_split
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.svm import SVC
-from sklearn.utils.fixes import loguniform
+from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
 
+from label_flip_revised.alfa_nn_v3 import get_dual_loss, solveLPNN
 from label_flip_revised.simple_nn_model import SimpleModel
-from label_flip_revised.utils import create_dir, open_csv, to_csv, time2str
-from label_flip_revised.torch_utils import train_model, evaluate
+from label_flip_revised.torch_utils import evaluate, train_model
+from label_flip_revised.utils import create_dir, open_csv, time2str, to_csv
 
 # For data selection:
 STEP = 0.1  # Increment by every STEP value.
@@ -35,54 +29,47 @@ LR = 0.001  # Learning rate.
 MAX_EPOCHS = 300  # Number of iteration for training.
 
 # For generating ALFA:
-ALFA_MAX_ITER = 5  # Number of iteration for ALFA.
-
-# def run_demo(X, y, eps):
-#     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-#     print(X_train.shape, X_test.shape)
+ALFA_MAX_ITER = 3  # Number of iteration for ALFA.
 
 
-#     acc_train, loss_train = evaluate(dataloader_train, model, loss_fn, device)
-#     acc_test, loss_test = evaluate(dataloader_test, model, loss_fn, device)
-#     print('[Clean] Train acc: {:.2f} loss: {:.3f}. Test acc: {:.2f} loss: {:.3f}'.format(
-#         acc_train * 100, loss_train, acc_test * 100, loss_test,))
+def poison_attack(model,
+                  X_train,
+                  y_train,
+                  eps,
+                  max_epochs,
+                  optimizer,
+                  loss_fn,
+                  batch_size,
+                  device,
+                  steps=ALFA_MAX_ITER):
+    # Compute the initial output
+    X_train_tensor = torch.from_numpy(X_train).type(torch.float32)
+    tau = get_dual_loss(model, X_train_tensor, device)
+    alpha = np.zeros_like(tau)
+    y_poison = np.copy(y_train)
 
-#     # Perform attack
-#     y_poison = poison_attack(model,
-#                              X_train,
-#                              y_train,
-#                              eps=eps,
-#                              max_epochs=max_epochs,
-#                              optimizer=optimizer,
-#                              loss_fn=loss_fn,
-#                              batch_size=batch_size,
-#                              device=device)
+    pbar = tqdm(range(steps), ncols=100)
+    for step in pbar:
+        y_poison_next, msg = solveLPNN(alpha, tau, y_true=y_train, eps=eps)
+        pbar.set_postfix({'Optimizer': msg})
 
-#     # Evaluate poison labels
-#     print('Poison rate:', np.mean(y_poison != y_train))
+        if step > 1 and np.all(y_poison_next == y_poison):
+            print('Poison labels are converged. Break.')
+            break
+        y_poison = y_poison_next
 
-#     # On Poisoned dataset
-#     dataset_poison = TensorDataset(
-#         torch.from_numpy(X_train).type(torch.float32),
-#         torch.from_numpy(y_poison).type(torch.int64),
-#     )
-#     dataloader_poison = DataLoader(
-#         dataset_poison, batch_size=batch_size, shuffle=True)
-
-#     # Train the poison model
-#     model_poison = Model(X_train.shape[1], 2).to(device)
-#     optimizer_poison = torch.optim.SGD(
-#         model_poison.parameters(), lr=lr, momentum=0.8)
-#     train_model(
-#         model_poison, dataloader_poison, optimizer_poison, loss_fn, device, max_epochs
-#     )
-
-#     acc, loss = evaluate(dataloader_train, model_poison, loss_fn, device)
-#     print("[{}] acc: {:.2f} loss: {:.3f}".format("train", acc * 100, loss))
-#     acc, loss = evaluate(dataloader_poison, model_poison, loss_fn, device)
-#     print("[{}] acc: {:.2f} loss: {:.3f}".format("poison", acc * 100, loss))
-#     acc, loss = evaluate(dataloader_test, model_poison, loss_fn, device)
-#     print("[{}] acc: {:.2f} loss: {:.3f}".format("test", acc * 100, loss))
+        # Update model
+        dataset = TensorDataset(torch.from_numpy(X_train).type(torch.float32),
+                                torch.from_numpy(y_poison).type(torch.int64))
+        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+        train_model(model,
+                    dataloader,
+                    optimizer=optimizer,
+                    loss_fn=loss_fn,
+                    device=device,
+                    max_epochs=max_epochs)
+        alpha = get_dual_loss(model, X_train_tensor, device)
+    return y_poison
 
 
 def batch_train_attack(file_list, advx_range, path_file, test_size, max_epochs, hidden_dim):
@@ -108,7 +95,7 @@ def batch_train_attack(file_list, advx_range, path_file, test_size, max_epochs, 
             to_csv(X_test, y_test, cols, path_clean_test)
         else:
             print('Found existing train-test splits.')
-            X_train, y_train, _ = open_csv(path_clean_train)
+            X_train, y_train, cols = open_csv(path_clean_train)
             X_test, y_test, _ = open_csv(path_clean_test)
 
         # Step 2: Train and save the classifier
@@ -149,10 +136,49 @@ def batch_train_attack(file_list, advx_range, path_file, test_size, max_epochs, 
 
         # Save model
         path_model = os.path.join(
-            path_file, 'train', dataname + '_SimpleNN.torch')
+            path_file, 'torch', dataname + '_SimpleNN.torch')
         torch.save(model.state_dict(), path_model)
 
-        # Step 3: Generate and save attacks
+        # Step 3: Generate attacks
+        for p in advx_range:
+            y_poison = poison_attack(model,
+                                     X_train,
+                                     y_train,
+                                     eps=p,
+                                     max_epochs=max_epochs,
+                                     optimizer=optimizer,
+                                     loss_fn=loss_fn,
+                                     batch_size=BATCH_SIZE,
+                                     device=device)
+            # Save attack
+            path_output = '{}_nn_ALFA_{:.2f}.csv'.format(
+                os.path.join(path_file, 'alfa_nn', dataname), np.round(p, 2))
+            to_csv(X_train, y_poison, cols, path_output)
+
+            # Step 4: Evaluation
+            print('Poison rate:', np.mean(y_poison != y_train))
+
+            dataset_poison = TensorDataset(
+                torch.from_numpy(X_train).type(torch.float32),
+                torch.from_numpy(y_poison).type(torch.int64),
+            )
+            dataloader_poison = DataLoader(
+                dataset_poison, batch_size=BATCH_SIZE, shuffle=True)
+
+            # Train the poison model
+            model_poison = SimpleModel(
+                n_features, hidden_dim=hidden_dim, output_dim=2).to(device)
+            optimizer_poison = torch.optim.SGD(
+                model_poison.parameters(), lr=LR, momentum=0.8)
+            train_model(model_poison, dataloader_poison, optimizer_poison,
+                        loss_fn, device, max_epochs)
+
+            acc_poison, _ = evaluate(
+                dataloader_poison, model_poison, loss_fn, device)
+            acc_test, _ = evaluate(
+                dataloader_test, model_poison, loss_fn, device)
+            print('Accuracy on {:.2f}% poison data train: {:.2f} test: {:.2f}'.format(
+                p * 100, acc_poison * 100, acc_test * 100))
 
 
 if __name__ == '__main__':
@@ -187,7 +213,7 @@ if __name__ == '__main__':
     file_list = np.sort(file_list)
 
     # For DEBUG only
-    file_list = file_list[:1]
+    # file_list = file_list[:1]
 
     print('Found {} datasets'.format(len(file_list)))
 
@@ -195,6 +221,7 @@ if __name__ == '__main__':
     create_dir(os.path.join(path, 'alfa_nn'))
     create_dir(os.path.join(path, 'train'))
     create_dir(os.path.join(path, 'test'))
+    create_dir(os.path.join(path, 'torch'))
 
     batch_train_attack(file_list=file_list,
                        advx_range=advx_range,

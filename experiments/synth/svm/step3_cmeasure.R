@@ -53,11 +53,12 @@ computeCMeasure = function(file_list, path_data, path_output, n) {
 
 args = commandArgs(trailingOnly=TRUE)
 
-if (length(args)==2) {
+if (length(args)==3) {
     folder_name = args[1]
-    output_name = args[2]
+    folder_poison = args[2]
+    output_name = args[3]
 } else {
-  stop('At least 2 argument must be supplied (data directory, output filename).n', call.=FALSE)
+  stop('At least 3 argument must be supplied (1:clean data path; 2: poison data path; 3: output filename).n', call.=FALSE)
 }
 
 print('Computing C-Measures for clean data')
@@ -69,7 +70,7 @@ path_output = sprintf('../results/%s', output_name)
 computeCMeasure(file_list, path_data, path_output, n)
 
 print('Computing C-Measures for poisoned data')
-path_data = sprintf('%s/alfa/', folder_name)
+path_data = sprintf('%s/%s/', folder_name, folder_poison)
 print(path_data)
 file_list = list.files(path=path_data, pattern='*.csv')
 print(sprintf('# of datasets: %d', length(file_list)))
