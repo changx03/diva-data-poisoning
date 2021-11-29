@@ -95,17 +95,30 @@ def gen_poison_labels(path_data,
     random_search.fit(X, y)
     best_params = random_search.best_params_
 
-    # Prepare data
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=test_size, stratify=y)
-    # Save clean train and test data
+    # Save SVM params as JSON
+    path_svm_json = os.path.join(
+        path_output, 'alfa', dataname + '_svm.json')
+    to_json(best_params, path_svm_json)
+
+    # Do NOT split the data, if train and test sets already exit.
     path_clean_train = os.path.join(
         path_output, 'train', dataname + '_clean_train.csv')
-    to_csv(X_train, y_train, cols, path_clean_train)
-
     path_clean_test = os.path.join(
         path_output, 'test', dataname + '_clean_test.csv')
-    to_csv(X_test, y_test, cols, path_clean_test)
+
+    # Cannot find existing train and test sets:
+    if (not os.path.exists(path_clean_train) or
+            not os.path.exists(path_clean_test)):
+        X, y, cols = open_csv(path_data)
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=test_size, stratify=y)
+        # Save splits.
+        to_csv(X_train, y_train, cols, path_clean_train)
+        to_csv(X_test, y_test, cols, path_clean_test)
+    else:
+        print('Found existing train-test splits.')
+        X_train, y_train, cols = open_csv(path_clean_train)
+        X_test, y_test, _ = open_csv(path_clean_test)
 
     # Preprocessing
     scaler = StandardScaler()
@@ -122,12 +135,6 @@ def gen_poison_labels(path_data,
 
     print('[{}] Acc on clean train: {:.2f} test: {:.2f}'.format(
         dataname, acc_train * 100, acc_test * 100))
-
-
-    # Save SVM params as JSON
-    path_svm_json = os.path.join(
-        path_output, 'alfa', dataname + '_svm.json')
-    to_json(best_params, path_svm_json)
 
     # Generate poison labels
     compute_and_save_flipped_data(
