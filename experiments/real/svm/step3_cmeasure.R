@@ -7,7 +7,7 @@ library("ECoL")
 
 ################################################################################
 # Parameters
-n = 100  # Save every 100 files
+n = 50  # Save every 100 files
 ################################################################################
 
 computeCMeasure = function(file_list, path_data, path_output, n) {
@@ -54,7 +54,7 @@ computeCMeasure = function(file_list, path_data, path_output, n) {
 args = commandArgs(trailingOnly=TRUE)
 
 if (length(args)==3) {
-    folder_name = args[1]
+    folder_clean = args[1]
     folder_poison = args[2]
     output_name = args[3]
 } else {
@@ -62,7 +62,7 @@ if (length(args)==3) {
 }
 
 print('Computing C-Measures for clean data')
-path_data = folder_name
+path_data = folder_clean
 print(normalizePath(path_data))
 file_list = list.files(path=path_data, pattern='*.csv')
 print(sprintf('# of datasets: %d', length(file_list)))
@@ -70,8 +70,8 @@ path_output = sprintf('../results/%s_clean', output_name)
 computeCMeasure(file_list, path_data, path_output, n)
 
 print('Computing C-Measures for poisoned data')
-path_data = sprintf('%s/%s/', folder_name, folder_poison)
-print(path_data)
+path_data = folder_poison
+print(normalizePath(path_data))
 file_list = list.files(path=path_data, pattern='*.csv')
 print(sprintf('# of datasets: %d', length(file_list)))
 path_output = sprintf('../results/%s_poison', output_name)
