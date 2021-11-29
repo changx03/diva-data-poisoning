@@ -1,0 +1,204 @@
+"""Train a Neural Network classifier as based model.
+"""
+import argparse
+import glob
+import os
+import time
+import warnings
+
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from scipy.optimize import linprog
+from sklearn import datasets
+from sklearn.model_selection import RandomizedSearchCV, train_test_split
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.svm import SVC
+from sklearn.utils.fixes import loguniform
+from torch.utils.data import DataLoader, TensorDataset
+from tqdm import tqdm
+
+from label_flip_revised.simple_nn_model import SimpleModel
+from label_flip_revised.utils import create_dir, open_csv, to_csv, time2str
+from label_flip_revised.torch_utils import train_model, evaluate
+
+# For data selection:
+STEP = 0.1  # Increment by every STEP value.
+# When a dataset has 2000 datapoints, 1000 for training, and 1000 for testing.
+TEST_SIZE = 1000
+
+# For training the classifier:
+BATCH_SIZE = 128  # Size of mini-batch.
+HIDDEN_LAYER = 128  # Number of hidden neurons in a hidden layer.
+LR = 0.001  # Learning rate.
+MAX_EPOCHS = 300  # Number of iteration for training.
+
+# For generating ALFA:
+ALFA_MAX_ITER = 5  # Number of iteration for ALFA.
+
+# def run_demo(X, y, eps):
+#     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+#     print(X_train.shape, X_test.shape)
+
+
+#     acc_train, loss_train = evaluate(dataloader_train, model, loss_fn, device)
+#     acc_test, loss_test = evaluate(dataloader_test, model, loss_fn, device)
+#     print('[Clean] Train acc: {:.2f} loss: {:.3f}. Test acc: {:.2f} loss: {:.3f}'.format(
+#         acc_train * 100, loss_train, acc_test * 100, loss_test,))
+
+#     # Perform attack
+#     y_poison = poison_attack(model,
+#                              X_train,
+#                              y_train,
+#                              eps=eps,
+#                              max_epochs=max_epochs,
+#                              optimizer=optimizer,
+#                              loss_fn=loss_fn,
+#                              batch_size=batch_size,
+#                              device=device)
+
+#     # Evaluate poison labels
+#     print('Poison rate:', np.mean(y_poison != y_train))
+
+#     # On Poisoned dataset
+#     dataset_poison = TensorDataset(
+#         torch.from_numpy(X_train).type(torch.float32),
+#         torch.from_numpy(y_poison).type(torch.int64),
+#     )
+#     dataloader_poison = DataLoader(
+#         dataset_poison, batch_size=batch_size, shuffle=True)
+
+#     # Train the poison model
+#     model_poison = Model(X_train.shape[1], 2).to(device)
+#     optimizer_poison = torch.optim.SGD(
+#         model_poison.parameters(), lr=lr, momentum=0.8)
+#     train_model(
+#         model_poison, dataloader_poison, optimizer_poison, loss_fn, device, max_epochs
+#     )
+
+#     acc, loss = evaluate(dataloader_train, model_poison, loss_fn, device)
+#     print("[{}] acc: {:.2f} loss: {:.3f}".format("train", acc * 100, loss))
+#     acc, loss = evaluate(dataloader_poison, model_poison, loss_fn, device)
+#     print("[{}] acc: {:.2f} loss: {:.3f}".format("poison", acc * 100, loss))
+#     acc, loss = evaluate(dataloader_test, model_poison, loss_fn, device)
+#     print("[{}] acc: {:.2f} loss: {:.3f}".format("test", acc * 100, loss))
+
+
+def batch_train_attack(file_list, advx_range, path_file, test_size, max_epochs, hidden_dim):
+    for path_data in file_list:
+        # Step 1: Load data
+        # Remove extension:
+        dataname = os.path.splitext(os.path.basename(path_data))[0]
+
+        # Do NOT split the data, if train and test sets already exit.
+        path_clean_train = os.path.join(
+            path_file, 'train', dataname + '_clean_train.csv')
+        path_clean_test = os.path.join(
+            path_file, 'test', dataname + '_clean_test.csv')
+
+        # Cannot find train and test sets exist:
+        if (not os.path.exists(path_clean_train) or
+                not os.path.exists(path_clean_test)):
+            X, y, cols = open_csv(path_data)
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=test_size, stratify=y)
+            # Save splits.
+            to_csv(X_train, y_train, cols, path_clean_train)
+            to_csv(X_test, y_test, cols, path_clean_test)
+        else:
+            print('Found existing train-test splits.')
+            X_train, y_train, _ = open_csv(path_clean_train)
+            X_test, y_test, _ = open_csv(path_clean_test)
+
+        # Step 2: Train and save the classifier
+        dataset_train = TensorDataset(torch.from_numpy(X_train).type(torch.float32),
+                                      torch.from_numpy(y_train).type(torch.int64))
+        dataloader_train = DataLoader(
+            dataset_train, batch_size=BATCH_SIZE, shuffle=True)
+
+        dataset_test = TensorDataset(torch.from_numpy(X_test).type(torch.float32),
+                                     torch.from_numpy(y_test).type(torch.int64))
+        dataloader_test = DataLoader(
+            dataset_test, batch_size=BATCH_SIZE, shuffle=True)
+
+        if torch.cuda.is_available():
+            device = torch.device('cuda')
+        else:
+            device = torch.device('cpu')
+            print('Running on CPU!')
+
+        n_features = X_train.shape[1]
+        model = SimpleModel(
+            n_features, hidden_dim=hidden_dim, output_dim=2).to(device)
+        optimizer = torch.optim.SGD(model.parameters(), lr=LR, momentum=0.8)
+        loss_fn = nn.CrossEntropyLoss()
+
+        # Train the clean model
+        time_start = time.perf_counter()
+        train_model(model, dataloader_train, optimizer,
+                    loss_fn, device, max_epochs)
+        time_elapsed = time.perf_counter() - time_start
+        print('Time taken: {}'.format(time2str(time_elapsed)))
+
+        acc_train, loss_train = evaluate(
+            dataloader_train, model, loss_fn, device)
+        acc_test, loss_test = evaluate(dataloader_test, model, loss_fn, device)
+        print('[Clean] Train acc: {:.2f} loss: {:.3f}. Test acc: {:.2f} loss: {:.3f}'.format(
+            acc_train * 100, loss_train, acc_test * 100, loss_test,))
+
+        # Save model
+        path_model = os.path.join(
+            path_file, 'train', dataname + '_SimpleNN.torch')
+        torch.save(model.state_dict(), path_model)
+
+        # Step 3: Generate and save attacks
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--path', type=str, required=True,
+                        help='The path of the data')
+    parser.add_argument('-s', '--step', type=float, default=STEP,
+                        help='Spacing between values. Default=0.1')
+    parser.add_argument('-m', '--max', type=float, default=0.51,
+                        help='End of interval. Default=0.51')
+    parser.add_argument('-t', '--test', type=float, default=TEST_SIZE,
+                        help='Test set size.')
+    parser.add_argument('-e', '--epoch', type=int, default=MAX_EPOCHS,
+                        help='Maximum number of epochs.')
+    parser.add_argument('--hidden', type=int, default=HIDDEN_LAYER,
+                        help='Number of neurons in a hidden layer.')
+    args = parser.parse_args()
+    path = args.path
+    step = args.step
+    max_ = args.max
+    test_size = args.test
+    test_size = int(test_size) if test_size > 1. else float(test_size)
+    max_epochs = args.epoch
+    hidden_dim = args.hidden
+
+    advx_range = np.arange(0, max_, step)[1:]  # Remove 0%
+
+    print('Path:', path)
+    print('Range:', advx_range)
+
+    file_list = glob.glob(os.path.join(path, '*.csv'))
+    file_list = np.sort(file_list)
+
+    # For DEBUG only
+    file_list = file_list[:1]
+
+    print('Found {} datasets'.format(len(file_list)))
+
+    # Create directory if not exist
+    create_dir(os.path.join(path, 'alfa_nn'))
+    create_dir(os.path.join(path, 'train'))
+    create_dir(os.path.join(path, 'test'))
+
+    batch_train_attack(file_list=file_list,
+                       advx_range=advx_range,
+                       path_file=path,
+                       test_size=test_size,
+                       max_epochs=max_epochs,
+                       hidden_dim=hidden_dim)
