@@ -32,6 +32,7 @@ def solveLP(eps, psi, C):
     # Boundary condition
     q_bound = np.array([[0., 1.]]*n2)
 
+    # The optimization is NOT guaranteed to be solvable.
     result = linprog(
         coef,
         A_ub=A_ub,
@@ -40,7 +41,7 @@ def solveLP(eps, psi, C):
         b_eq=b_eq,
         bounds=q_bound,
         method='interior-point',
-        options={'sym_pos': False, 'lstsq': True, 'presolve': True}
+        # options={'sym_pos': False, 'lstsq': True, 'presolve': True}
     )
     q = result.x
     return q, result.message
