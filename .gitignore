@@ -156,5 +156,5 @@ test.*
 
 # Generated files and raw data
 data/
+!data/raw/
 results/
-!data/raw/*
