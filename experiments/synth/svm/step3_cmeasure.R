@@ -7,7 +7,8 @@ library("ECoL")
 
 ################################################################################
 # Parameters
-n = 100  # Save every 100 files
+# Save every n files. Each output CSV file contains n rows / samples.
+n = 100  
 ################################################################################
 
 computeCMeasure = function(file_list, path_data, path_output, n) {
