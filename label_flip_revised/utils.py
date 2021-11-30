@@ -57,8 +57,8 @@ def open_csv(path_data, label_name='y'):
 def to_csv(X, y, cols, path_data):
     """Save data into a CSV file."""
     logger.info('Save to:', path_data)
-    df = pd.DataFrame(X, columns=cols)
-    df['y'] = y
+    df = pd.DataFrame(X, columns=cols, dtype=np.float32)
+    df['y'] = pd.Series(y, dtype=int)
     df.to_csv(path_data, index=False)
 
 
