@@ -92,7 +92,7 @@ def batch_train_attack(path_data,
     # Cannot find train and test sets exist:
     if (not os.path.exists(path_clean_train) or
             not os.path.exists(path_clean_test)):
-        X, y, cols = open_csv(path_data)
+        X, y, cols = open_csv(path_data, label_name='Class')
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=test_size, stratify=y)
         # Save splits.

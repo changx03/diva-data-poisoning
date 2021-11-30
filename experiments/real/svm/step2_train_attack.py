@@ -109,7 +109,6 @@ def gen_poison_labels(path_data,
     # Cannot find existing train and test sets:
     if (not os.path.exists(path_clean_train) or
             not os.path.exists(path_clean_test)):
-        X, y, cols = open_csv(path_data)
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=test_size, stratify=y)
         # Save splits.
