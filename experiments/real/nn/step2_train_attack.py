@@ -162,9 +162,11 @@ def batch_train_attack(path_data,
                                  batch_size=BATCH_SIZE,
                                  device=device)
         # Save attack
-        path_output = '{}_nn_ALFA_{:.2f}.csv'.format(
-            os.path.join(path_output, 'alfa_nn', dataname), np.round(p, 2))
-        to_csv(X_train, y_poison, cols, path_output)
+        path_poison = os.path.join(
+            path_output,
+            'alfa_nn',
+            f'{dataname}_nn_ALFA_{np.round(p, 2):.2f}.csv')
+        to_csv(X_train, y_poison, cols, path_poison)
 
         # Step 4: Evaluation
         print('Poison rate:', np.mean(y_poison != y_train))
