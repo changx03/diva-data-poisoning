@@ -66,7 +66,8 @@ if (length(args)==4) {
     folder_output = args[3]
     output_name = args[4]
 } else {
-  stop('At least 4 argument must be supplied (1:clean data path; 2: poison data path; 3: output path; 4: output name).n', call.=FALSE)
+  error_msg = sprintf('4 arguments must be supplied (1:clean data path. 2: poison data path. 3: output path. 4: output name). Got %d', length(args))
+  stop(error_msg, call.=FALSE)
 }
 
 print('Computing C-Measures for clean data')
