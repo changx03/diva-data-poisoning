@@ -43,7 +43,10 @@ computeCMeasure = function(file_list, path_data, path_output, n) {
       data = read.csv(path_data_)
       data$y = as.factor(data$y)
       n_class = length(levels(data$y))
-      print(sprintf('# of classes: %d', n_class))
+      if (n_class != 2) {
+        print(sprintf('Expecting 2 classes, Got %d. Next.', n_class))
+        next
+      }
       
       c_measure = complexity(y~., data)
       attr = c(file)
