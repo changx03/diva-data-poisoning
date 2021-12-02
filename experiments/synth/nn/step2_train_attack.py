@@ -187,8 +187,8 @@ if __name__ == '__main__':
                         help='The path of the data')
     parser.add_argument('-s', '--step', type=float, default=STEP,
                         help='Spacing between values. Default=0.1')
-    parser.add_argument('-m', '--max', type=float, default=0.51,
-                        help='End of interval. Default=0.51')
+    parser.add_argument('-m', '--max', type=float, default=0.49,
+                        help='End of interval. Default=0.49')
     parser.add_argument('-t', '--test', type=float, default=TEST_SIZE,
                         help='Test set size.')
     parser.add_argument('-e', '--epoch', type=int, default=MAX_EPOCHS,
