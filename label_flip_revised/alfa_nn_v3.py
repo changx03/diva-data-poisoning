@@ -62,11 +62,12 @@ def alfa_nn(model,
     X_train_tensor = torch.from_numpy(X_train).type(torch.float32)
     tau = get_dual_loss(model, X_train_tensor, device)
     alpha = np.zeros_like(tau)
-    y_poison = np.copy(y_train)
+    y_poison = np.copy(y_train).astype(int)
 
     pbar = tqdm(range(steps), ncols=100)
     for step in pbar:
         y_poison_next, msg = solveLPNN(alpha, tau, y_true=y_train, eps=eps)
+        y_poison_next = np.round(y_poison_next).astype(int)
         pbar.set_postfix({'Optimizer': msg})
 
         if step > 1 and np.all(y_poison_next == y_poison):
