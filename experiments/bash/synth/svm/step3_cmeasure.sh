@@ -1,6 +1,12 @@
 #!bin/bash
 
-# Compute C-Measures for each data set and save results as CSV file.
-# 1: clean path. 2: poison path. 3: output path. 4: output name
+# Compute C-Measures for real datasets and save results as CSV file.
+# Parameters:
+# 1: data path. 2: output path. 3: output name
 mkdir ./results/synth_svm
-Rscript ./experiments/synth/svm/step3_cmeasure.R "./data/synth/" "./data/synth/alfa/" "./results/synth_svm/" "synth_svm"
+
+echo "For clean data..."
+Rscript ./experiments/synth/step3_cmeasure.R "./data/synth/" "./results/synth_svm/" "synth_train_clean"
+
+echo "For poisoned data..."
+Rscript ./experiments/synth/step3_cmeasure.R "./data/synth/alfa/" "./results/synth_svm/" "synth_svm_poison"

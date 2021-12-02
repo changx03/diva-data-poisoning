@@ -2,13 +2,20 @@
 
 # Compute C-Measures for each data set and save results as CSV file.
 
+
 library('tidyverse')
 library("ECoL")
 
 ################################################################################
+# Command line arguments
+# 1: data path
+# 2: output path
+# 3: output name
+
+################################################################################
 # Parameters
 # Save every n files. Each output CSV file contains n rows / samples.
-n = 50  
+n = 50
 ################################################################################
 
 computeCMeasure = function(file_list, path_data, path_output, n) {
@@ -29,8 +36,10 @@ computeCMeasure = function(file_list, path_data, path_output, n) {
     is_first = TRUE
     for (file in files) {
       start = Sys.time()
-      path_data_ = paste(path_data, file, sep='')
-      print(sprintf('Open file: %s', path_data_))
+      
+      path_data_ = sprintf('%s%s',path_data, file)
+      print(sprintf('Read from: %s', path_data_))
+
       data = read.csv(path_data_)
       data$y = as.factor(data$y)
       
@@ -60,29 +69,18 @@ computeCMeasure = function(file_list, path_data, path_output, n) {
 
 args = commandArgs(trailingOnly=TRUE)
 
-if (length(args)==4) {
-    folder_name = args[1]
-    folder_poison = args[2]
-    folder_output = args[3]
-    output_name = args[4]
+if (length(args)==3) {
+    path_data = args[1]
+    folder_output = args[2]
+    output_name = args[3]
 } else {
-  error_msg = sprintf('4 arguments must be supplied (1:clean data path. 2: poison data path. 3: output path. 4: output name). Got %d', length(args))
+  error_msg = sprintf('3 arguments must be supplied (1:clean data path. 2: output path. 3: output name). Got %d', length(args))
   stop(error_msg, call.=FALSE)
 }
 
-print('Computing C-Measures for clean data')
-path_data = folder_name
 print(normalizePath(path_data))
 file_list = list.files(path=path_data, pattern='*.csv')
 print(sprintf('# of datasets: %d', length(file_list)))
-print(normalizePath(folder_output))
-path_output = sprintf('%s%s_clean', folder_output, output_name)
-computeCMeasure(file_list, path_data, path_output, n)
-
-print('Computing C-Measures for poisoned data')
-path_data = folder_poison
-print(normalizePath(path_data))
-file_list = list.files(path=path_data, pattern='*.csv')
-print(sprintf('# of datasets: %d', length(file_list)))
-path_output = sprintf('%s%s_poison', folder_output, output_name)
+# path_output is NOT the full name, since we will save multiple file during training.
+path_output = sprintf('%s%s', folder_output, output_name)
 computeCMeasure(file_list, path_data, path_output, n)
