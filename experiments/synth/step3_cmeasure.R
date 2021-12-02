@@ -47,18 +47,23 @@ computeCMeasure = function(file_list, path_data, path_output, n) {
         print(sprintf('Expecting 2 classes, Got %d. Next.', n_class))
         next
       }
-      
-      c_measure = complexity(y~., data)
-      attr = c(file)
-      names(attr) = c('Data')
-      c_measure <- c(attr, c_measure)
-      
-      if (is_first) {
-        df = data.frame(t(c_measure))
-        is_first = FALSE
-      } else {
-        df = rbind(df, data.frame(t(c_measure)))
-      }
+      tryCatch({
+        c_measure = complexity(y~., data)
+        attr = c(file)
+        names(attr) = c('Data')
+        c_measure <- c(attr, c_measure)
+
+        if (is_first) {
+          df = data.frame(t(c_measure))
+          is_first = FALSE
+        } else {
+          df = rbind(df, data.frame(t(c_measure)))
+        }
+      }, warning = function(warn) {
+        print(paste('Complexity Warning:', warn))
+      }, error = function(err) {
+        print(paste('Complexity Error:', err))
+      })
       
       time_elapsed = as.numeric(Sys.time() - start, units="secs")
       print(sprintf('[%d] Time: %3.0fs File: %s', j, time_elapsed, file))
