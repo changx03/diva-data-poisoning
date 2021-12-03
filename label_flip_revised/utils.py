@@ -58,7 +58,10 @@ def to_csv(X, y, cols, path_data):
     """Save data into a CSV file."""
     logger.info('Save to:', path_data)
     df = pd.DataFrame(X, columns=cols, dtype=np.float32)
+    labels = len(np.unique(y))
+    assert labels == 2, f'Expecting 2 classes, got {labels}'
     df['y'] = pd.Series(y, dtype=int)
+    df['y'] = df['y'].astype('category').cat.codes
     df.to_csv(path_data, index=False)
 
 

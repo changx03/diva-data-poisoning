@@ -158,3 +158,6 @@ test.*
 data/
 !data/raw/*
 results/
+
+# Temporary executable file 
+run_exp.sh
