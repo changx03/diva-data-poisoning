@@ -153,6 +153,7 @@ def batch_train_attack(path_data,
 
     # Step 3: Generate attacks
     for p in advx_range:
+        time_start = time.perf_counter()
         y_poison = poison_attack(model,
                                  X_train,
                                  y_train,
@@ -162,6 +163,8 @@ def batch_train_attack(path_data,
                                  loss_fn=loss_fn,
                                  batch_size=BATCH_SIZE,
                                  device=device)
+        time_elapse = time.perf_counter() - time_start
+        print(f'Generating {p * 100:.0f}% poison labels took {time_elapse:.1f}s')
         # Save attack
         path_poison = os.path.join(
             path_output,
