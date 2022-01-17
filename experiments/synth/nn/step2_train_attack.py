@@ -97,6 +97,7 @@ def batch_train_attack(file_list, advx_range, path_file, test_size, max_epochs, 
             print('Found existing train-test splits.')
             X_train, y_train, cols = open_csv(path_clean_train)
             X_test, y_test, _ = open_csv(path_clean_test)
+        print(f'Train shape: {X_train.shape}, test shape: {X_test.shape}')
 
         # Step 2: Train and save the classifier
         dataset_train = TensorDataset(torch.from_numpy(X_train).type(torch.float32),
