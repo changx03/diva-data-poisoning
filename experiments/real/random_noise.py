@@ -21,7 +21,6 @@ DATANAMES = [
     'australian_std',
     'banknote_std',
     'breastcancer_std',
-    'cardiotocography_std',
     'cmc_std',
     'htru2_subset_std',
     'phoneme_subset_std',
