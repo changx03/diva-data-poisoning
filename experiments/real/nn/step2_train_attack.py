@@ -147,8 +147,7 @@ def batch_train_attack(path_data,
         acc_train * 100, loss_train, acc_test * 100, loss_test,))
 
     # Save model
-    path_model = os.path.join(
-        path_output, 'torch', dataname + '_SimpleNN.torch')
+    path_model = os.path.join(path_output, 'real', 'torch', dataname + '_SimpleNN_flfa_0.00.torch')
     torch.save(model.state_dict(), path_model)
 
     # Step 3: Generate attacks
@@ -180,12 +179,15 @@ def batch_train_attack(path_data,
             dataset_poison, batch_size=BATCH_SIZE, shuffle=True)
 
         # Train the poison model
-        model_poison = SimpleModel(
-            n_features, hidden_dim=hidden_dim, output_dim=2).to(device)
-        optimizer_poison = torch.optim.SGD(
-            model_poison.parameters(), lr=LR, momentum=0.8)
-        train_model(model_poison, dataloader_poison, optimizer_poison,
-                    loss_fn, device, max_epochs)
+        model_poison = SimpleModel(n_features, hidden_dim=hidden_dim, output_dim=2).to(device)
+        optimizer_poison = torch.optim.SGD(model_poison.parameters(), lr=LR, momentum=0.8)
+
+        path_model = os.path.join(path_output, 'real', 'torch', f'{dataname}_SimpleNN_flfa_{p:.2f}.torch')
+        if os.path.exists(path_model):
+            model.load_state_dict(torch.load(path_model, map_location=device))
+        else:
+            train_model(model_poison, dataloader_poison, optimizer_poison,loss_fn, device, max_epochs)
+            torch.save(model.state_dict(), path_model)
 
         acc_poison, _ = evaluate(
             dataloader_poison, model_poison, loss_fn, device)
