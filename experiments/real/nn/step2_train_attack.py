@@ -147,6 +147,7 @@ def batch_train_attack(path_data,
         acc_train * 100, loss_train, acc_test * 100, loss_test,))
 
     # Save model
+    create_dir(os.path.join(path_output, 'real', 'torch'))
     path_model = os.path.join(path_output, 'real', 'torch', dataname + '_SimpleNN_flfa_0.00.torch')
     torch.save(model.state_dict(), path_model)
 
