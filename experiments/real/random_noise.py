@@ -47,7 +47,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filepath', type=str, default='./data/output',
                         help='The file path of the data')
-    parser.add_argument('-o', '--output', type=str, default='./data/output/random',
+    parser.add_argument('-o', '--output', type=str, default='./data/output/real_random',
                         help='The output path')
     parser.add_argument('-s', '--step', type=float, default=STEP,
                         help='Spacing between values. Default=0.1')
