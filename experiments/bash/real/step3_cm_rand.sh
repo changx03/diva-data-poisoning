@@ -5,7 +5,7 @@
 # 1: data path. 2: output path. 3: data name
 
 echo "C-Measure for clean training data should be completed in SVM"
-mkdir ./results/random
+mkdir ./results/real_random
 Rscript ./experiments/real/step3_cmeasure.R "./data/output/random/" "./results/real_random/abalone_random_poison.csv" "abalone"
 Rscript ./experiments/real/step3_cmeasure.R "./data/output/random/" "./results/real_random/australian_random_poison.csv" "australian"
 Rscript ./experiments/real/step3_cmeasure.R "./data/output/random/" "./results/real_random/banknote_random_poison.csv" "banknote"
