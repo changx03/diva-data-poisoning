@@ -6,6 +6,7 @@ cp ./results/synth_cor_rate_falfa.pdf ../overleaf_cmeasures/images/
 cp ./results/abalone_falfa_line.pdf ../overleaf_cmeasures/images/
 cp ./results/texture_falfa_line.pdf ../overleaf_cmeasures/images/
 cp ./results/roc_real.pdf ../overleaf_cmeasures/images/
+cp ./results/roc_synth.pdf ../overleaf_cmeasures/images/
 
 
 cd ~/workspace/overleaf_cmeasures
