@@ -9,6 +9,7 @@ cp ./results/roc_real_repeated.pdf ../overleaf_cmeasures/images/
 cp ./results/roc_synth.pdf ../overleaf_cmeasures/images/
 cp ./results/fake_acc.pdf ../overleaf_cmeasures/images/
 cp ./results/flfa_acc.pdf ../overleaf_cmeasures/images/
+cp ./results/synth_heatmap.pdf ../overleaf_cmeasures/images/
 
 cd ~/workspace/overleaf_cmeasures
 git pull
