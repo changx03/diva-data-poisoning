@@ -140,7 +140,7 @@ def gen_poison_labels(file_list, advx_range, path_file, test_size):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', '--path', type=str, required=True,
+    parser.add_argument('-f', '--filepath', type=str, required=True,
                         help='The path of the data')
     parser.add_argument('-s', '--step', type=float, default=STEP,
                         help='Spacing between values. Default=0.1')
@@ -149,7 +149,7 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--test', type=float, default=TEST_SIZE,
                         help='Test set size.')
     args = parser.parse_args()
-    path = args.path
+    path = args.filepath
     step = args.step
     max_ = args.max
     test_size = args.test

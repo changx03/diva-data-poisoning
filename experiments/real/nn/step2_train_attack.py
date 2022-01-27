@@ -133,23 +133,27 @@ def batch_train_attack(path_data,
     optimizer = torch.optim.SGD(model.parameters(), lr=LR, momentum=0.8)
     loss_fn = nn.CrossEntropyLoss()
 
-    # Train the clean model
-    time_start = time.perf_counter()
-    train_model(model, dataloader_train, optimizer,
-                loss_fn, device, max_epochs)
-    time_elapsed = time.perf_counter() - time_start
-    print('Time taken: {}'.format(time2str(time_elapsed)))
+    create_dir(os.path.join(path_output, 'real', 'torch'))
+    path_model = os.path.join(path_output, 'real', 'torch', dataname + '_SimpleNN_flfa_0.00.torch')
 
+    if os.path.exists(path_model):
+        model.load_state_dict(torch.load(path_model, map_location=device))
+    else:
+        # Train the clean model
+        time_start = time.perf_counter()
+        train_model(model, dataloader_train, optimizer,
+                    loss_fn, device, max_epochs)
+        time_elapsed = time.perf_counter() - time_start
+        print('Time taken: {}'.format(time2str(time_elapsed)))
+        # Save model
+        torch.save(model.state_dict(), path_model)
+
+    # Evaluate results
     acc_train, loss_train = evaluate(
         dataloader_train, model, loss_fn, device)
     acc_test, loss_test = evaluate(dataloader_test, model, loss_fn, device)
     print('[Clean] Train acc: {:.2f} loss: {:.3f}. Test acc: {:.2f} loss: {:.3f}'.format(
         acc_train * 100, loss_train, acc_test * 100, loss_test,))
-
-    # Save model
-    create_dir(os.path.join(path_output, 'real', 'torch'))
-    path_model = os.path.join(path_output, 'real', 'torch', dataname + '_SimpleNN_flfa_0.00.torch')
-    torch.save(model.state_dict(), path_model)
 
     # Step 3: Generate attacks
     for p in advx_range:

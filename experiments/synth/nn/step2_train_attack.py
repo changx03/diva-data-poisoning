@@ -72,7 +72,7 @@ def poison_attack(model,
     return y_poison
 
 
-def batch_train_attack(file_list, advx_range, path_file, test_size, max_epochs, hidden_dim):
+def batch_train_attack(file_list, advx_range, path_file, path_output, test_size, max_epochs, hidden_dim):
     for path_data in file_list:
         # Step 1: Load data
         # Remove extension:
@@ -122,23 +122,25 @@ def batch_train_attack(file_list, advx_range, path_file, test_size, max_epochs, 
         optimizer = torch.optim.SGD(model.parameters(), lr=LR, momentum=0.8)
         loss_fn = nn.CrossEntropyLoss()
 
-        # Train the clean model
-        time_start = time.perf_counter()
-        train_model(model, dataloader_train, optimizer,
-                    loss_fn, device, max_epochs)
-        time_elapsed = time.perf_counter() - time_start
-        print('Time taken: {}'.format(time2str(time_elapsed)))
+        path_model = os.path.join(path_output, 'torch', dataname + '_flfa_0.00_SimpleNN.torch')
+        if os.path.exists(path_model):
+            model.load_state_dict(torch.load(path_model, map_location=device))
+        else:
+            # Train the clean model
+            time_start = time.perf_counter()
+            train_model(model, dataloader_train, optimizer,
+                        loss_fn, device, max_epochs)
+            time_elapsed = time.perf_counter() - time_start
+            print('Time taken: {}'.format(time2str(time_elapsed)))
+            # Save model
+            torch.save(model.state_dict(), path_model)
 
+        # Evaluate results
         acc_train, loss_train = evaluate(
             dataloader_train, model, loss_fn, device)
         acc_test, loss_test = evaluate(dataloader_test, model, loss_fn, device)
         print('[Clean] Train acc: {:.2f} loss: {:.3f}. Test acc: {:.2f} loss: {:.3f}'.format(
             acc_train * 100, loss_train, acc_test * 100, loss_test,))
-
-        # Save model
-        path_model = os.path.join(
-            path_file, 'torch', dataname + '_SimpleNN.torch')
-        torch.save(model.state_dict(), path_model)
 
         # Step 3: Generate attacks
         for p in advx_range:
@@ -171,8 +173,14 @@ def batch_train_attack(file_list, advx_range, path_file, test_size, max_epochs, 
                 n_features, hidden_dim=hidden_dim, output_dim=2).to(device)
             optimizer_poison = torch.optim.SGD(
                 model_poison.parameters(), lr=LR, momentum=0.8)
-            train_model(model_poison, dataloader_poison, optimizer_poison,
-                        loss_fn, device, max_epochs)
+
+            path_model = os.path.join(path_output, 'torch', f'{dataname}_flfa_{p:.2f}_SimpleNN.torch')
+            if os.path.exists(path_model):
+                model.load_state_dict(torch.load(path_model, map_location=device))
+            else:
+                train_model(model_poison, dataloader_poison, optimizer_poison,
+                            loss_fn, device, max_epochs)
+                torch.save(model.state_dict(), path_model)
 
             acc_poison, _ = evaluate(
                 dataloader_poison, model_poison, loss_fn, device)
@@ -184,8 +192,10 @@ def batch_train_attack(file_list, advx_range, path_file, test_size, max_epochs, 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', '--path', type=str, required=True,
+    parser.add_argument('-f', '--filepath', type=str, required=True,
                         help='The path of the data')
+    parser.add_argument('-o', '--output', type=str, default='results',
+                        help='The output path')
     parser.add_argument('-s', '--step', type=float, default=STEP,
                         help='Spacing between values. Default=0.1')
     parser.add_argument('-m', '--max', type=float, default=0.49,
@@ -197,7 +207,8 @@ if __name__ == '__main__':
     parser.add_argument('--hidden', type=int, default=HIDDEN_LAYER,
                         help='Number of neurons in a hidden layer.')
     args = parser.parse_args()
-    path = args.path
+    path = args.filepath
+    output = args.output
     step = args.step
     max_ = args.max
     test_size = args.test
@@ -222,11 +233,12 @@ if __name__ == '__main__':
     create_dir(os.path.join(path, 'alfa_nn'))
     create_dir(os.path.join(path, 'train'))
     create_dir(os.path.join(path, 'test'))
-    create_dir(os.path.join(path, 'torch'))
+    create_dir(os.path.join(output, 'torch'))
 
     batch_train_attack(file_list=file_list,
                        advx_range=advx_range,
                        path_file=path,
+                       path_output=output,
                        test_size=test_size,
                        max_epochs=max_epochs,
                        hidden_dim=hidden_dim)
