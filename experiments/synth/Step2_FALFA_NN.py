@@ -113,7 +113,7 @@ def batch_train_attack(train_list, test_list, advx_range, path_data, path_output
         optimizer = torch.optim.SGD(model.parameters(), lr=LR, momentum=MOMENTUM)
         loss_fn = nn.CrossEntropyLoss()
 
-        path_model = os.path.join(path_data, 'torch', f'{dataname}_falfa_0.00.torch')
+        path_model = os.path.join(path_data, 'torch', f'{dataname}_0.00.torch')
         if os.path.exists(path_model):
             model.load_state_dict(torch.load(path_model, map_location=device))
         else:
@@ -162,18 +162,18 @@ def batch_train_attack(train_list, test_list, advx_range, path_data, path_output
                 dataset_poison, batch_size=BATCH_SIZE, shuffle=True)
 
             # Train the poison model
-            model_poison = SimpleModel(n_features, hidden_dim=HIDDEN_LAYER, output_dim=2).to(device)
-            optimizer_poison = torch.optim.SGD(model_poison.parameters(), lr=LR, momentum=MOMENTUM)
+            poisoned_model = SimpleModel(n_features, hidden_dim=HIDDEN_LAYER, output_dim=2).to(device)
+            optimizer_poison = torch.optim.SGD(poisoned_model.parameters(), lr=LR, momentum=MOMENTUM)
 
-            path_model = os.path.join(path_data, 'torch', f'{dataname}_falfa_{p:.2f}.torch')
+            path_model = os.path.join(path_data, 'torch', f'{dataname}_{p:.2f}.torch')
             if os.path.exists(path_model):
-                model.load_state_dict(torch.load(path_model, map_location=device))
+                poisoned_model.load_state_dict(torch.load(path_model, map_location=device))
             else:
-                train_model(model_poison, dataloader_poison, optimizer_poison, loss_fn, device, MAX_EPOCHS)
-                torch.save(model.state_dict(), path_model)
+                train_model(poisoned_model, dataloader_poison, optimizer_poison, loss_fn, device, MAX_EPOCHS)
+                torch.save(poisoned_model.state_dict(), path_model)
 
-            acc_poison, _ = evaluate(dataloader_poison, model_poison, loss_fn, device)
-            acc_test, _ = evaluate(dataloader_test, model_poison, loss_fn, device)
+            acc_poison, _ = evaluate(dataloader_poison, poisoned_model, loss_fn, device)
+            acc_test, _ = evaluate(dataloader_test, poisoned_model, loss_fn, device)
             print('P-Rate [{:.2f}] Acc  P-train: {:.2f} C-test: {:.2f}'.format(p * 100, acc_poison * 100, acc_test * 100))
             accuracy_train_poison.append(acc_poison)
             accuracy_test_poison.append(acc_test)
