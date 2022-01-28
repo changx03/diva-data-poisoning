@@ -2,6 +2,7 @@
 """
 import argparse
 import glob
+import imp
 import math
 import os
 from pathlib import Path
@@ -11,19 +12,14 @@ import pandas as pd
 from sklearn.datasets import make_classification
 from sklearn.model_selection import ParameterGrid, train_test_split
 from sklearn.preprocessing import Normalizer
-from sklearn.svm import SVC
+from tqdm import tqdm
 
-N_SAMPLES = 2000  # 1000 for training; 1000 for testing
+N_SAMPLES = np.arange(1000, 2001, 200)
 N_CLASSES = 2  # Number of classes
-N_SETS = 150  # Number of dataset want to generate
+N_SETS = 50  # Number of dataset want to generate
 N_DIFFICULTY = 3
-DIFFICULTY_RANGE = [0.7, 0.9]
 N_SETS = 1000
-
-
-def save_data(df, file_name, data_path):
-    path_output = os.path.join(data_path, f'{file_name}.csv')
-    df.to_csv(path_output, index=False)
+NOISE_RATES = np.arange(0, 0.41, 0.05)
 
 
 def gen_synth_data(data_path, param, bins):
@@ -38,33 +34,19 @@ def gen_synth_data(data_path, param, bins):
     df['y'] = df['y'].astype('category')
 
     # Format name based on params
-    file_name = 'f{:02d}_i{:02d}_r{:02d}_c{:02d}_w{:.0f}_'.format(
+    file_name = 'f{:02d}_i{:02d}_r{:02d}_c{:02d}_w{:.0f}_n{}_nr{:.2f}_'.format(
         param['n_features'],
         param['n_informative'],
         param['n_redundant'],
         param['n_clusters_per_class'],
-        param['weights'][0] * 10)
+        param['weights'][0] * 10,
+        param['n_samples'],
+        param['flip_y']
+    )
     data_list = glob.glob(os.path.join(data_path, file_name + '*.csv'))
     file_name += str(len(data_list) + 1)
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=1000)
-    clf = SVC()
-    clf.fit(X_train, y_train)
-    acc = clf.score(X_test, y_test)
-    if acc <= DIFFICULTY_RANGE[0] and bins[0] > 0:  # Easy
-        save_data(df, file_name, data_path)
-        bins[0] -= 1
-        print(f'Easy:   {bins[0]}')
-    elif acc <= DIFFICULTY_RANGE[1] and bins[1] > 0:  # Normal
-        save_data(df, file_name, data_path)
-        bins[1] -= 1
-        print(f'Normal: {bins[1]}')
-    elif acc > DIFFICULTY_RANGE[1] and bins[2] > 0:  # Hard
-        save_data(df, file_name, data_path)
-        bins[2] -= 1
-        print(f'Hard:   {bins[2]}')
-    else:
-        print(f'Ditch {file_name}')
+    path_output = os.path.join(data_path, f'{file_name}.csv')
+    df.to_csv(path_output, index=False)
 
 
 def synth_data_grid(n_sets, folder):
@@ -81,7 +63,7 @@ def synth_data_grid(n_sets, folder):
     grid = []
     for f in range(4, 31):
         grid.append({
-            'n_samples': [N_SAMPLES],
+            'n_samples': N_SAMPLES,
             'n_classes': [N_CLASSES],
             'n_features': [f],
             'n_repeated': [0],
@@ -97,16 +79,14 @@ def synth_data_grid(n_sets, folder):
 
     # Replace iff we need more sets than it has.
     replace = len(param_sets) < N_SETS
-    selected_indices = np.random.choice(
-        len(param_sets), N_SETS, replace=replace)
-    for i in selected_indices:
-        # This ensure the generator gets a new RND seed everytime
-        param_sets[i]['random_state'] = np.random.randint(
-            1000, np.iinfo(np.int16).max)
-        gen_synth_data(data_path, param_sets[i], bins)
-        if np.sum(bins) <= 0:
-            print('Generation completed!')
-            break
+    selected_indices = np.random.choice(len(param_sets), N_SETS, replace=replace)
+    for i in tqdm(range(n_sets)):
+        for r in NOISE_RATES:
+            idx_param = selected_indices[i]
+            # This ensure the generator gets a new RND seed everytime
+            param_sets[idx_param]['random_state'] = np.random.randint(1000, np.iinfo(np.int16).max)
+            param_sets[idx_param]['flip_y'] = r
+            gen_synth_data(data_path, param_sets[idx_param], bins)
 
 
 if __name__ == '__main__':
@@ -115,8 +95,6 @@ if __name__ == '__main__':
                         help='# of random generated synthetic data sets.')
     parser.add_argument('-f', '--folder', default='synth', type=str,
                         help='The output folder.')
-    parser.add_argument('-s', '--samples', default=N_SAMPLES, type=int,
-                        help='# of random samples per data set.')
     args = parser.parse_args()
     n_sets = args.nSets
     folder = args.folder
