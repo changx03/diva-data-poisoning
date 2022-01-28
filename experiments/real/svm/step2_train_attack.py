@@ -28,7 +28,6 @@ SVM_PARAM_DICT = {
     'kernel': ['rbf'],
 }
 STEP = 0.1  # Increment by every STEP value.
-# When a dataset has 2000 datapoints, 1000 for training, and 1000 for testing.
 TEST_SIZE = 0.2
 
 

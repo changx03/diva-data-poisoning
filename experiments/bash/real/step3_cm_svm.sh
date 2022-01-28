@@ -9,7 +9,6 @@ Rscript ./experiments/real/step3_cmeasure.R "./data/output/alfa/" "./results/rea
 Rscript ./experiments/real/step3_cmeasure.R "./data/output/alfa/" "./results/real_svm/australian_svm_poison.csv" "australian"
 Rscript ./experiments/real/step3_cmeasure.R "./data/output/alfa/" "./results/real_svm/banknote_svm_poison.csv" "banknote"
 Rscript ./experiments/real/step3_cmeasure.R "./data/output/alfa/" "./results/real_svm/breastcancer_svm_poison.csv" "breastcancer"
-Rscript ./experiments/real/step3_cmeasure.R "./data/output/alfa/" "./results/real_svm/cardiotocography_svm_poison.csv" "cardiotocography"
 Rscript ./experiments/real/step3_cmeasure.R "./data/output/alfa/" "./results/real_svm/cmc_svm_poison.csv" "cmc"
 Rscript ./experiments/real/step3_cmeasure.R "./data/output/alfa/" "./results/real_svm/htru2_svm_poison.csv" "htru2"
 Rscript ./experiments/real/step3_cmeasure.R "./data/output/alfa/" "./results/real_svm/phoneme_svm_poison.csv" "phoneme"
