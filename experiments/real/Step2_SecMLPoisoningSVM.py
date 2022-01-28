@@ -145,11 +145,14 @@ def run_poison_attack(path_train, path_test, dataname, advx_range, path_data, pa
         print('Time: [{}] P-Rate {:.2f} Acc  P-train: {:.2f} C-test: {:.2f}'.format(
             time2str(time_elapse), p * 100, acc_train_pois * 100, acc_test_pois * 100))
 
-        accuracy_train_poison.append(acc_train_pois)
-        accuracy_test_poison.append(acc_test_pois)
+        # Save poisoned data
         path_poison_data = os.path.join(path_data, 'poison_svm', f'{dataname}_poison_svm_{p:.2f}.csv')
         to_csv(X_poisoned, y_poisoned, cols, path_poison_data)
+
+        # Prepare score DataFrame
         path_poison_data_list.append(path_poison_data)
+        accuracy_train_poison.append(acc_train_pois)
+        accuracy_test_poison.append(acc_test_pois)
 
     # Save results
     data = {
@@ -176,10 +179,10 @@ if __name__ == '__main__':
                         help='The path of the data')
     parser.add_argument('-d', '--dataset', sype=str, required=True,
                         help='Dataset name')
-    parser.add_argument('-o', '--output', type=str, default='results/synth',
+    parser.add_argument('-o', '--output', type=str, default='results/real',
                         help='The output path for scores.')
-    parser.add_argument('-s', '--step', type=float, default=0.05,
-                        help='Spacing between values. Default=0.05')
+    parser.add_argument('-s', '--step', type=float, default=0.1,
+                        help='Spacing between values. Default=0.1')
     parser.add_argument('-m', '--max', type=float, default=0.41,
                         help='End of interval. Default=0.41')
     args = parser.parse_args()
