@@ -22,13 +22,12 @@ from label_flip_revised.utils import (create_dir, open_csv, open_json, to_csv,
 warnings.filterwarnings('ignore')
 
 ALFA_MAX_ITER = 5  # Number of iteration for ALFA.
-N_ITER_SEARCH = 20  # Number of iteration for SVM parameter tuning.
-SVM_PARAM_DICT = {
-    'C': loguniform(1e0, 1e3),
-    'gamma': loguniform(1e-4, 0.1),
-    'kernel': ['rbf'],
-}
-# When a dataset has 2000 datapoints, 1000 for training, and 1000 for testing.
+# N_ITER_SEARCH = 50  # Number of iteration for SVM parameter tuning.
+# SVM_PARAM_DICT = {
+#     'C': loguniform(1e0, 1e3),
+#     'gamma': loguniform(1e-4, 10),
+#     'kernel': ['rbf'],
+# }
 
 
 def get_y_flip(X_train, y_train, p, svc):
@@ -101,16 +100,20 @@ def gen_poison_labels(train_list, test_list, advx_range, path_data, path_output)
             best_params = open_json(path_svm_json)
         else:
             # Tune parameters
-            clf = SVC()
-            random_search = RandomizedSearchCV(
-                clf,
-                param_distributions=SVM_PARAM_DICT,
-                n_iter=N_ITER_SEARCH,
-                cv=5,
-                n_jobs=-1,
-            )
-            random_search.fit(X_train, y_train)
-            best_params = random_search.best_params_
+            # clf = SVC()
+            # random_search = RandomizedSearchCV(
+            #     clf,
+            #     param_distributions=SVM_PARAM_DICT,
+            #     n_iter=N_ITER_SEARCH,
+            #     cv=5,
+            #     n_jobs=-1,
+            # )
+            # random_search.fit(X_train, y_train)
+            # best_params = random_search.best_params_
+            best_params = {
+                'C': 1,
+                'gamma': 10,
+            }
             # Save SVM params as JSON
             to_json(best_params, path_svm_json)
 
