@@ -22,7 +22,7 @@ from label_flip_revised.utils import (create_dir, open_csv, open_json, to_csv,
 warnings.filterwarnings('ignore')
 
 ALFA_MAX_ITER = 5  # Number of iteration for ALFA.
-N_ITER_SEARCH = 30  # Number of iteration for SVM parameter tuning.
+N_ITER_SEARCH = 50  # Number of iteration for SVM parameter tuning.
 SVM_PARAM_DICT = {
     'C': loguniform(1e0, 1e3),
     'gamma': loguniform(1e-4, 1e2),
