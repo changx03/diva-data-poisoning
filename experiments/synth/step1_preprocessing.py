@@ -3,7 +3,6 @@
 import argparse
 import datetime
 import glob
-import json
 import math
 import os
 from pathlib import Path
@@ -11,26 +10,24 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.datasets import make_classification
-from sklearn.model_selection import ParameterGrid
+from sklearn.model_selection import ParameterGrid, train_test_split
 from sklearn.preprocessing import Normalizer
+from sklearn.svm import SVC
 
 N_SAMPLES = 2000  # 1000 for training; 1000 for testing
 N_CLASSES = 2  # Number of classes
-N_SETS = 10  # Number of dataset want to generate
+N_SETS = 150  # Number of dataset want to generate
+N_DIFFICULTY = 3
+DIFFICULTY_RANGE = [0.7, 0.9]
+N_SETS = 1000
 
 
-def converter(obj):
-    if isinstance(obj, np.integer):
-        return int(obj)
-    elif isinstance(obj, np.floating):
-        return float(obj)
-    elif isinstance(obj, np.ndarray):
-        return obj.tolist()
-    elif isinstance(obj, datetime.datetime):
-        return obj.__str__()
+def save_data(df, file_name, data_path):
+    path_output = os.path.join(data_path, f'{file_name}.csv')
+    df.to_csv(path_output, index=False)
 
 
-def gen_synth_data(data_path, param):
+def gen_synth_data(data_path, param, bins):
     X, y = make_classification(**param)
     normalizer = Normalizer().fit(X)
     X = normalizer.transform(X)
@@ -50,21 +47,33 @@ def gen_synth_data(data_path, param):
         param['weights'][0] * 10)
     data_list = glob.glob(os.path.join(data_path, file_name + '*.csv'))
     file_name += str(len(data_list) + 1)
-    # print(file_name)
 
-    # Save params as JSON file
-    file_names = [
-        os.path.join(data_path, file_name + ext) for ext in ['.json', '.csv']]
-    with open(file_names[0], 'w') as file:
-        # print(param)
-        json.dump(param, file, default=converter)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=1000)
+    clf = SVC()
+    clf.fit(X_train, y_train)
+    acc = clf.score(X_test, y_test)
+    if acc <= DIFFICULTY_RANGE[0] and bins[0] > 0:
+        save_data(df, file_name, data_path)
+        bins[0] -= 1
+    elif acc <= DIFFICULTY_RANGE[1] and bins[1] > 0:
+        save_data(df, file_name, data_path)
+        bins[1] -= 1
+    elif acc > DIFFICULTY_RANGE[1] and bins[12] > 0:
+        save_data(df, file_name, data_path)
+        bins[2] -= 1
+    else:
+        print(f'Ditch {file_name}')
 
+    path_output = os.path.join(data_path, f'{file_name}.csv')
     # Save dataframe
-    df.to_csv(file_names[1], index=False)
-    print('Save to:', file_names)
+    df.to_csv(path_output, index=False)
+    print('Save to:', path_output)
 
 
 def synth_data_grid(n_sets, folder):
+    n_per_bin = n_sets // N_DIFFICULTY
+    bins = n_per_bin * np.ones(N_DIFFICULTY)
+
     # Create directory
     data_path = os.path.join('data', folder)
     if not os.path.exists(data_path):
@@ -90,14 +99,17 @@ def synth_data_grid(n_sets, folder):
             1, param_sets[i]['n_informative'])
 
     # Replace iff we need more sets than it has.
-    replace = len(param_sets) < n_sets
+    replace = len(param_sets) < N_SETS
     selected_indices = np.random.choice(
-        len(param_sets), n_sets, replace=replace)
+        len(param_sets), N_SETS, replace=replace)
     for i in selected_indices:
         # This ensure the generator gets a new RND seed everytime
         param_sets[i]['random_state'] = np.random.randint(
             1000, np.iinfo(np.int16).max)
-        gen_synth_data(data_path, param_sets[i])
+        gen_synth_data(data_path, param_sets[i], bins)
+        if np.sum(bins) <= 0:
+            print('Generation completed!')
+            break
 
 
 if __name__ == '__main__':
