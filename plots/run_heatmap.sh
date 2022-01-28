@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 
 cd ./plots
 echo "Creating synth_clean_score.csv ..."

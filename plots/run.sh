@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 
 echo "Computing C-Measures on clean data..."
 bash ./experiments/bash/real/step3_cm_clean.sh

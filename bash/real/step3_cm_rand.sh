@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 
 # Compute C-Measures for real datasets and save results as CSV file.
 # Parameters:

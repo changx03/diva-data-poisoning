@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 
 # Train SVM and generate Adversarial Label Flip Attack examples
 # We do NOT want to include 50% poison case! In a perfectly balanced dataset, 50% will lead to one class completely disappear.

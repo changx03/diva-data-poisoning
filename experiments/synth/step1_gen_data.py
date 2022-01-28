@@ -1,7 +1,6 @@
 """Generate synthetic data.
 """
 import argparse
-import datetime
 import glob
 import math
 import os
