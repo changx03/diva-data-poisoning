@@ -2,7 +2,6 @@
 """
 import argparse
 import glob
-import imp
 import math
 import os
 from pathlib import Path
@@ -10,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.datasets import make_classification
-from sklearn.model_selection import ParameterGrid, train_test_split
+from sklearn.model_selection import ParameterGrid
 from sklearn.preprocessing import Normalizer
 from tqdm import tqdm
 

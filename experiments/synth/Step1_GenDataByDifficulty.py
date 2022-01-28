@@ -21,8 +21,8 @@ DIFFICULTY_RANGE = [0.7, 0.9]
 N_SETS = 1000
 
 
-def save_data(df, file_name, data_path):
-    path_output = os.path.join(data_path, f'{file_name}.csv')
+def save_data(df, file_name, data_path, difficulty, postfix):
+    path_output = os.path.join(data_path, f'{difficulty}_{file_name}_{postfix}.csv')
     df.to_csv(path_output, index=False)
 
 
@@ -38,7 +38,7 @@ def gen_synth_data(data_path, param, bins):
     df['y'] = df['y'].astype('category')
 
     # Format name based on params
-    file_name = 'f{:02d}_i{:02d}_r{:02d}_c{:02d}_w{:.0f}_n{}_'.format(
+    file_name = 'f{:02d}_i{:02d}_r{:02d}_c{:02d}_w{:.0f}_n{}'.format(
         param['n_features'],
         param['n_informative'],
         param['n_redundant'],
@@ -46,22 +46,22 @@ def gen_synth_data(data_path, param, bins):
         param['weights'][0] * 10,
         param['n_samples'])
     data_list = glob.glob(os.path.join(data_path, file_name + '*.csv'))
-    file_name += str(len(data_list) + 1)
+    postfix = str(len(data_list) + 1)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
     clf = SVC()
     clf.fit(X_train, y_train)
     acc = clf.score(X_test, y_test)
     if acc <= DIFFICULTY_RANGE[0] and bins[0] > 0:  # Easy
-        save_data(df, file_name, data_path)
+        save_data(df, file_name, data_path, 'Hard', postfix)
         bins[0] -= 1
         print(f'Easy:   {bins[0]}')
     elif acc <= DIFFICULTY_RANGE[1] and bins[1] > 0:  # Normal
-        save_data(df, file_name, data_path)
+        save_data(df, file_name, data_path, 'Normal', postfix)
         bins[1] -= 1
         print(f'Normal: {bins[1]}')
     elif acc > DIFFICULTY_RANGE[1] and bins[2] > 0:  # Hard
-        save_data(df, file_name, data_path)
+        save_data(df, file_name, data_path, 'Easy', postfix)
         bins[2] -= 1
         print(f'Hard:   {bins[2]}')
     else:
