@@ -18,16 +18,12 @@ from label_flip_revised.simple_nn_model import SimpleModel
 from label_flip_revised.torch_utils import evaluate, train_model
 from label_flip_revised.utils import create_dir, open_csv, time2str, to_csv
 
-# For data selection:
-STEP = 0.1  # Increment by every STEP value.
-# When a dataset has 2000 datapoints, 1000 for training, and 1000 for testing.
-TEST_SIZE = 1000
-
 # For training the classifier:
 BATCH_SIZE = 256  # Size of mini-batch.
 HIDDEN_LAYER = 128  # Number of hidden neurons in a hidden layer.
-LR = 0.001  # Learning rate.
+LR = 0.01  # Learning rate.
 MAX_EPOCHS = 300  # Number of iteration for training.
+MOMENTUM = 0.9
 
 # For generating ALFA:
 ALFA_MAX_ITER = 3  # Number of iteration for ALFA.
@@ -114,7 +110,7 @@ def batch_train_attack(train_list, test_list, advx_range, path_data, path_output
 
         n_features = X_train.shape[1]
         model = SimpleModel(n_features, hidden_dim=HIDDEN_LAYER, output_dim=2).to(device)
-        optimizer = torch.optim.SGD(model.parameters(), lr=LR, momentum=0.9)
+        optimizer = torch.optim.SGD(model.parameters(), lr=LR, momentum=MOMENTUM)
         loss_fn = nn.CrossEntropyLoss()
 
         path_model = os.path.join(path_data, 'torch', f'{dataname}_falfa_0.00.torch')
@@ -167,7 +163,7 @@ def batch_train_attack(train_list, test_list, advx_range, path_data, path_output
 
             # Train the poison model
             model_poison = SimpleModel(n_features, hidden_dim=HIDDEN_LAYER, output_dim=2).to(device)
-            optimizer_poison = torch.optim.SGD(model_poison.parameters(), lr=LR, momentum=0.9)
+            optimizer_poison = torch.optim.SGD(model_poison.parameters(), lr=LR, momentum=MOMENTUM)
 
             path_model = os.path.join(path_data, 'torch', f'{dataname}_falfa_{p:.2f}.torch')
             if os.path.exists(path_model):

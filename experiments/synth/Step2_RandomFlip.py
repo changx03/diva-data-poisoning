@@ -10,9 +10,6 @@ from label_flip_revised import flip_random
 from label_flip_revised.utils import create_dir, open_csv, to_csv
 
 
-STEP = 0.05
-
-
 def gen_random_labels(path_data, path_output, advx_range):
     files = sorted(glob(os.path.join(path_data, 'train', '*_train.csv')))
     print(f'# of files: {len(files)}')
@@ -31,11 +28,11 @@ def gen_random_labels(path_data, path_output, advx_range):
 
 if __name__ == '__main__':
     # Example:
-    # python ./experiments/synth/Step2_RandomFlip,py -f "data/synth/"
+    # python ./experiments/synth/Step2_RandomFlip.py -f "data/synth/"
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filepath', type=str, required=True,
                         help='The file path of the data')
-    parser.add_argument('-s', '--step', type=float, default=STEP,
+    parser.add_argument('-s', '--step', type=float, default=0.05,
                         help='Spacing between values. Default=0.0.5')
     parser.add_argument('-m', '--max', type=float, default=0.41,
                         help='End of interval. Default=0.41')
