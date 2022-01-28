@@ -24,7 +24,7 @@ ALFA_MAX_ITER = 5  # Number of iteration for ALFA.
 N_ITER_SEARCH = 50  # Number of iteration for SVM parameter tuning.
 SVM_PARAM_DICT = {
     'C': loguniform(1e0, 1e3),
-    'gamma': loguniform(1e-4, 0.1),
+    'gamma': loguniform(1e-4, 1e2),
     'kernel': ['rbf'],
 }
 STEP = 0.1  # Increment by every STEP value.
