@@ -18,7 +18,7 @@ def split_data(path_data, path_output, test_size):
     print(f'Found {len(path_list)} datasets.')
 
     for p in path_list:
-        X, y, cols = open_csv(p)
+        X, y, cols = open_csv(p, label_name='Class')
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
         dataname = Path(p).stem
         to_csv(X_train, y_train, cols, os.path.join(path_output, 'train', f'{dataname}_train.csv'))
