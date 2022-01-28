@@ -51,15 +51,18 @@ def gen_synth_data(data_path, param, bins):
     clf = SVC()
     clf.fit(X_train, y_train)
     acc = clf.score(X_test, y_test)
-    if acc <= DIFFICULTY_RANGE[0] and bins[0] > 0:
+    if acc <= DIFFICULTY_RANGE[0] and bins[0] > 0:  # Easy
         save_data(df, file_name, data_path)
         bins[0] -= 1
-    elif acc <= DIFFICULTY_RANGE[1] and bins[1] > 0:
+        print(f'Easy:   {bins[0]}')
+    elif acc <= DIFFICULTY_RANGE[1] and bins[1] > 0:  # Normal
         save_data(df, file_name, data_path)
         bins[1] -= 1
-    elif acc > DIFFICULTY_RANGE[1] and bins[2] > 0:
+        print(f'Normal: {bins[1]}')
+    elif acc > DIFFICULTY_RANGE[1] and bins[2] > 0:  # Hard
         save_data(df, file_name, data_path)
         bins[2] -= 1
+        print(f'Hard:   {bins[2]}')
     else:
         print(f'Ditch {file_name}')
 
