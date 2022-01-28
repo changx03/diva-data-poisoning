@@ -139,21 +139,23 @@ def batch_train_attack(train_list, test_list, advx_range, path_data, path_output
         for p in advx_range:
             path_poison_data = os.path.join(path_data, 'falfa_nn', f'{dataname}_falfa_nn_{p:.2f}.csv')
             try:
-                y_poison = poison_attack(model,
-                                        X_train,
-                                        y_train,
-                                        eps=p,
-                                        max_epochs=MAX_EPOCHS,
-                                        optimizer=optimizer,
-                                        loss_fn=loss_fn,
-                                        batch_size=BATCH_SIZE,
-                                        device=device)
-                # Save attack
-                to_csv(X_train, y_poison, cols, path_poison_data)
+                if os.path.exists(path_poison_data):
+                    _, y_poison, _ = open_csv(path_poison_data)
+                else:
+                    y_poison = poison_attack(model,
+                                            X_train,
+                                            y_train,
+                                            eps=p,
+                                            max_epochs=MAX_EPOCHS,
+                                            optimizer=optimizer,
+                                            loss_fn=loss_fn,
+                                            batch_size=BATCH_SIZE,
+                                            device=device)
+                    # Save attack
+                    to_csv(X_train, y_poison, cols, path_poison_data)
+                    print('Poison rate:', np.mean(y_poison != y_train))
 
                 # Step 4: Evaluation
-                print('Poison rate:', np.mean(y_poison != y_train))
-
                 dataset_poison = TensorDataset(
                     torch.from_numpy(X_train).type(torch.float32),
                     torch.from_numpy(y_poison).type(torch.int64),

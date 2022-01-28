@@ -68,11 +68,14 @@ def gen_random_labels(train_list, test_list, advx_range, path_data, path_output)
         for p in advx_range:
             path_poison_data = os.path.join(path_data, 'rand', f'{dataname}_rand_{p:.2f}.csv')
             try:
-                if p == 0:
-                    y_flip = y_train
+                if os.path.exists(path_poison_data):
+                    _, y_flip, _ = open_csv(path_poison_data)
                 else:
-                    y_flip = flip_random(y_train, p)
-                to_csv(X_train, y_flip, cols, path_poison_data)
+                    if p == 0:
+                        y_flip = y_train
+                    else:
+                        y_flip = flip_random(y_train, p)
+                    to_csv(X_train, y_flip, cols, path_poison_data)
 
                 # Evaluate
                 clf_poison = SVC(**best_params)

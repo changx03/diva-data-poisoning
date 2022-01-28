@@ -58,16 +58,18 @@ def compute_and_save_flipped_data(X_train, y_train, X_test, y_test, clf, path_ou
     for p in advx_range:
         path_poison_data = '{}_alfa_svm_{:.2f}.csv'.format(path_output_base, np.round(p, 2))
         try:
-            time_start = time.time()
-            y_flip = get_y_flip(X_train, y_train, p, clf)
-            time_elapse = time.time() - time_start
-            print('Generating {:.0f}% poison labels took {:.1f}s'.format(p * 100, time_elapse))
-            to_csv(X_train, y_flip, cols, path_poison_data)
+            if os.path.exists(path_poison_data):
+                _, y_flip, _ = open_csv(path_poison_data)
+            else:
+                time_start = time.time()
+                y_flip = get_y_flip(X_train, y_train, p, clf)
+                time_elapse = time.time() - time_start
+                print('Generating {:.0f}% poison labels took {:.1f}s'.format(p * 100, time_elapse))
+                to_csv(X_train, y_flip, cols, path_poison_data)
 
             svm_params = clf.get_params()
             clf_poison = SVC(**svm_params)
             clf_poison.fit(X_train, y_flip)
-
             acc_train_poison = clf_poison.score(X_train, y_flip)
             acc_test_poison = clf_poison.score(X_test, y_test)
         except Exception as e:
