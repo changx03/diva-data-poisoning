@@ -63,11 +63,6 @@ def gen_synth_data(data_path, param, bins):
     else:
         print(f'Ditch {file_name}')
 
-    path_output = os.path.join(data_path, f'{file_name}.csv')
-    # Save dataframe
-    df.to_csv(path_output, index=False)
-    print('Save to:', path_output)
-
 
 def synth_data_grid(n_sets, folder):
     n_per_bin = n_sets // N_DIFFICULTY
