@@ -57,7 +57,7 @@ def gen_synth_data(data_path, param, bins):
     elif acc <= DIFFICULTY_RANGE[1] and bins[1] > 0:
         save_data(df, file_name, data_path)
         bins[1] -= 1
-    elif acc > DIFFICULTY_RANGE[1] and bins[12] > 0:
+    elif acc > DIFFICULTY_RANGE[1] and bins[2] > 0:
         save_data(df, file_name, data_path)
         bins[2] -= 1
     else:
