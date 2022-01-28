@@ -56,21 +56,26 @@ def compute_and_save_flipped_data(X_train, y_train, X_test, y_test, clf, path_ou
     path_poison_data_list = []
 
     for p in advx_range:
-        time_start = time.time()
-        y_flip = get_y_flip(X_train, y_train, p, clf)
-        time_elapse = time.time() - time_start
-        print('Generating {:.0f}% poison labels took {:.1f}s'.format(p * 100, time_elapse))
         path_poison_data = '{}_alfa_svm_{:.2f}.csv'.format(path_output_base, np.round(p, 2))
-        to_csv(X_train, y_flip, cols, path_poison_data)
-        path_poison_data_list.append(path_poison_data)
+        try:
+            time_start = time.time()
+            y_flip = get_y_flip(X_train, y_train, p, clf)
+            time_elapse = time.time() - time_start
+            print('Generating {:.0f}% poison labels took {:.1f}s'.format(p * 100, time_elapse))
+            to_csv(X_train, y_flip, cols, path_poison_data)
 
-        svm_params = clf.get_params()
-        clf_poison = SVC(**svm_params)
-        clf_poison.fit(X_train, y_flip)
+            svm_params = clf.get_params()
+            clf_poison = SVC(**svm_params)
+            clf_poison.fit(X_train, y_flip)
 
-        acc_train_poison = clf_poison.score(X_train, y_flip)
-        acc_test_poison = clf_poison.score(X_test, y_test)
+            acc_train_poison = clf_poison.score(X_train, y_flip)
+            acc_test_poison = clf_poison.score(X_test, y_test)
+        except Exception as e:
+            print(e)
+            acc_train_poison = 0
+            acc_test_poison = 0
         print('P-Rate [{:.2f}] Acc  P-train: {:.2f} C-test: {:.2f}'.format(p * 100, acc_train_poison * 100, acc_test_poison * 100))
+        path_poison_data_list.append(path_poison_data)
         accuracy_train_poison.append(acc_train_poison)
         accuracy_test_poison.append(acc_test_poison)
     return (accuracy_train_clean,

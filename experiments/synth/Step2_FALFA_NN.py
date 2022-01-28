@@ -137,44 +137,50 @@ def batch_train_attack(train_list, test_list, advx_range, path_data, path_output
 
         # Step 3: Generate attacks
         for p in advx_range:
-            y_poison = poison_attack(model,
-                                     X_train,
-                                     y_train,
-                                     eps=p,
-                                     max_epochs=MAX_EPOCHS,
-                                     optimizer=optimizer,
-                                     loss_fn=loss_fn,
-                                     batch_size=BATCH_SIZE,
-                                     device=device)
-            # Save attack
             path_poison_data = os.path.join(path_data, 'falfa_nn', f'{dataname}_falfa_nn_{p:.2f}.csv')
-            to_csv(X_train, y_poison, cols, path_poison_data)
-            path_poison_data_list.append(path_poison_data)
+            try:
+                y_poison = poison_attack(model,
+                                        X_train,
+                                        y_train,
+                                        eps=p,
+                                        max_epochs=MAX_EPOCHS,
+                                        optimizer=optimizer,
+                                        loss_fn=loss_fn,
+                                        batch_size=BATCH_SIZE,
+                                        device=device)
+                # Save attack
+                to_csv(X_train, y_poison, cols, path_poison_data)
 
-            # Step 4: Evaluation
-            print('Poison rate:', np.mean(y_poison != y_train))
+                # Step 4: Evaluation
+                print('Poison rate:', np.mean(y_poison != y_train))
 
-            dataset_poison = TensorDataset(
-                torch.from_numpy(X_train).type(torch.float32),
-                torch.from_numpy(y_poison).type(torch.int64),
-            )
-            dataloader_poison = DataLoader(
-                dataset_poison, batch_size=BATCH_SIZE, shuffle=True)
+                dataset_poison = TensorDataset(
+                    torch.from_numpy(X_train).type(torch.float32),
+                    torch.from_numpy(y_poison).type(torch.int64),
+                )
+                dataloader_poison = DataLoader(
+                    dataset_poison, batch_size=BATCH_SIZE, shuffle=True)
 
-            # Train the poison model
-            poisoned_model = SimpleModel(n_features, hidden_dim=HIDDEN_LAYER, output_dim=2).to(device)
-            optimizer_poison = torch.optim.SGD(poisoned_model.parameters(), lr=LR, momentum=MOMENTUM)
+                # Train the poison model
+                poisoned_model = SimpleModel(n_features, hidden_dim=HIDDEN_LAYER, output_dim=2).to(device)
+                optimizer_poison = torch.optim.SGD(poisoned_model.parameters(), lr=LR, momentum=MOMENTUM)
 
-            path_model = os.path.join(path_data, 'torch', f'{dataname}_{p:.2f}.torch')
-            if os.path.exists(path_model):
-                poisoned_model.load_state_dict(torch.load(path_model, map_location=device))
-            else:
-                train_model(poisoned_model, dataloader_poison, optimizer_poison, loss_fn, device, MAX_EPOCHS)
-                torch.save(poisoned_model.state_dict(), path_model)
+                path_model = os.path.join(path_data, 'torch', f'{dataname}_{p:.2f}.torch')
+                if os.path.exists(path_model):
+                    poisoned_model.load_state_dict(torch.load(path_model, map_location=device))
+                else:
+                    train_model(poisoned_model, dataloader_poison, optimizer_poison, loss_fn, device, MAX_EPOCHS)
+                    torch.save(poisoned_model.state_dict(), path_model)
 
-            acc_poison, _ = evaluate(dataloader_poison, poisoned_model, loss_fn, device)
-            acc_test, _ = evaluate(dataloader_test, poisoned_model, loss_fn, device)
+                acc_poison, _ = evaluate(dataloader_poison, poisoned_model, loss_fn, device)
+                acc_test, _ = evaluate(dataloader_test, poisoned_model, loss_fn, device)
+            except Exception as e:
+                print(e)
+                acc_poison = 0
+                acc_test = 0
+
             print('P-Rate [{:.2f}] Acc  P-train: {:.2f} C-test: {:.2f}'.format(p * 100, acc_poison * 100, acc_test * 100))
+            path_poison_data_list.append(path_poison_data)
             accuracy_train_poison.append(acc_poison)
             accuracy_test_poison.append(acc_test)
         # Save results

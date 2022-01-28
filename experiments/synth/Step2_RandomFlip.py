@@ -66,19 +66,24 @@ def gen_random_labels(train_list, test_list, advx_range, path_data, path_output)
         path_poison_data_list = []
 
         for p in advx_range:
-            if p == 0:
-                y_flip = y_train
-            else:
-                y_flip = flip_random(y_train, p)
             path_poison_data = os.path.join(path_data, 'rand', f'{dataname}_rand_{p:.2f}.csv')
-            to_csv(X_train, y_flip, cols, path_poison_data)
-            path_poison_data_list.append(path_poison_data)
+            try:
+                if p == 0:
+                    y_flip = y_train
+                else:
+                    y_flip = flip_random(y_train, p)
+                to_csv(X_train, y_flip, cols, path_poison_data)
 
-            # Evaluate
-            clf_poison = SVC(**best_params)
-            clf_poison.fit(X_train, y_flip)
-            acc_train_poison = clf_poison.score(X_train, y_flip)
-            acc_test_poison = clf_poison.score(X_test, y_test)
+                # Evaluate
+                clf_poison = SVC(**best_params)
+                clf_poison.fit(X_train, y_flip)
+                acc_train_poison = clf_poison.score(X_train, y_flip)
+                acc_test_poison = clf_poison.score(X_test, y_test)
+            except Exception as e:
+                print(e)
+                acc_train_poison = 0
+                acc_test_poison = 0
+            path_poison_data_list.append(path_poison_data)
             accuracy_train_poison.append(acc_train_poison)
             accuracy_test_poison.append(acc_test_poison)
         # Save results
