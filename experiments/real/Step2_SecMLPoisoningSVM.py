@@ -20,16 +20,16 @@ from label_flip_revised.utils import (create_dir, open_csv, open_json,
                                       time2str, to_csv, to_json)
 
 N_ITER_SEARCH = 50  # Number of iteration for SVM parameter tuning.
-SVM_PARAM_DICT = {
-    'C': loguniform(0.01, 10),
-    'gamma': loguniform(0.01, 10),
-    'kernel': ['rbf'],
-}
-# # USE THE PARAMETERS FROM ORIGINAL PAPER
-# BEST_PARAMS = {
-#     'C': 1,
-#     'gamma': 10,
+# SVM_PARAM_DICT = {
+#     'C': loguniform(0.01, 10),
+#     'gamma': loguniform(0.01, 10),
+#     'kernel': ['rbf'],
 # }
+# USE THE PARAMETERS FROM THE ORIGINAL PAPER
+BEST_PARAMS = {
+    'C': 1,
+    'gamma': 10,
+}
 SOLVER_PARAMS = {
     'eta': 0.05,
     'eta_min': 0.05,
@@ -61,18 +61,18 @@ def run_poison_attack(path_train, path_test, dataname, advx_range, path_data, pa
     if os.path.exists(path_svm_json):
         best_params = open_json(path_svm_json)
     else:
-        # Tune parameters
-        clf = SVC()
-        random_search = RandomizedSearchCV(
-            clf,
-            param_distributions=SVM_PARAM_DICT,
-            n_iter=N_ITER_SEARCH,
-            cv=5,
-            n_jobs=-1,
-        )
-        random_search.fit(X_train, y_train)
-        best_params = random_search.best_params_
-        # best_params = BEST_PARAMS
+        # # Tune parameters
+        # clf = SVC()
+        # random_search = RandomizedSearchCV(
+        #     clf,
+        #     param_distributions=SVM_PARAM_DICT,
+        #     n_iter=N_ITER_SEARCH,
+        #     cv=5,
+        #     n_jobs=-1,
+        # )
+        # random_search.fit(X_train, y_train)
+        # best_params = random_search.best_params_
+        best_params = BEST_PARAMS  # Use default params
         # Save SVM params as JSON
         to_json(best_params, path_svm_json)
     print('Best params:', best_params)
@@ -110,6 +110,8 @@ def run_poison_attack(path_train, path_test, dataname, advx_range, path_data, pa
                     cy_train = CArray(y_train)
                     cX_val = CArray(X_val)
                     cy_val = CArray(y_val)
+                    cX_test = CArray(X_test)
+                    cy_test = CArray(y_test)
 
                     train_set = CDataset(cX_train, cy_train)
                     val_set = CDataset(cX_val, cy_val)
@@ -138,7 +140,7 @@ def run_poison_attack(path_train, path_test, dataname, advx_range, path_data, pa
                     attack.n_points = n_poison
 
                     # Running attack
-                    _, _, pois_examples, _ = attack.run(cX_val, cy_val)
+                    _, _, pois_examples, _ = attack.run(cX_test, cy_test)
                     X_pois = np.vstack([X_train, pois_examples.X.get_data()])
                     y_pois = np.concatenate([y_train, pois_examples.Y.get_data()])
                 # Save poisoned data
