@@ -19,11 +19,17 @@ from tqdm import tqdm
 from label_flip_revised.utils import (create_dir, open_csv, open_json,
                                       time2str, to_csv, to_json)
 
-N_ITER_SEARCH = 50  # Number of iteration for SVM parameter tuning.
-SVM_PARAM_DICT = {
-    'C': loguniform(1e0, 1e3),
-    'gamma': loguniform(1e-4, 1e2),
-    'kernel': ['rbf'],
+# DO NOT TUNE PARAMETERS!
+# N_ITER_SEARCH = 50  # Number of iteration for SVM parameter tuning.
+# SVM_PARAM_DICT = {
+#     'C': loguniform(1e0, 1e3),
+#     'gamma': loguniform(1e-4, 1e2),
+#     'kernel': ['rbf'],
+# }
+# USE THE PARAMETERS FROM ORIGINAL PAPER
+BEST_PARAMS = {
+    'C': 1,
+    'gamma': 10,
 }
 SOLVER_PARAMS = {
     'eta': 0.05,
@@ -57,20 +63,17 @@ def run_poison_attack(path_train, path_test, dataname, advx_range, path_data, pa
         best_params = open_json(path_svm_json)
     else:
         # Tune parameters
-        clf = SVC()
-        random_search = RandomizedSearchCV(
-            clf,
-            param_distributions=SVM_PARAM_DICT,
-            n_iter=N_ITER_SEARCH,
-            cv=5,
-            n_jobs=-1,
-        )
-        random_search.fit(X_train, y_train)
-        best_params = random_search.best_params_
-        # best_params = {
-        #     'C': 1,
-        #     'gamma': 10,
-        # }
+        # clf = SVC()
+        # random_search = RandomizedSearchCV(
+        #     clf,
+        #     param_distributions=SVM_PARAM_DICT,
+        #     n_iter=N_ITER_SEARCH,
+        #     cv=5,
+        #     n_jobs=-1,
+        # )
+        # random_search.fit(X_train, y_train)
+        # best_params = random_search.best_params_
+        best_params = BEST_PARAMS
         # Save SVM params as JSON
         to_json(best_params, path_svm_json)
     print('Best params:', best_params)
@@ -156,7 +159,6 @@ def run_poison_attack(path_train, path_test, dataname, advx_range, path_data, pa
         time_elapse = time.time() - time_start
         print('Time: [{}] P-Rate {:.2f} Acc  P-train: {:.2f} C-test: {:.2f}'.format(
             time2str(time_elapse), p * 100, acc_train_pois * 100, acc_test_pois * 100))
-
 
         # Prepare score DataFrame
         path_poison_data_list.append(path_poison_data)
