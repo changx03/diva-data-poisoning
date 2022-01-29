@@ -15,4 +15,13 @@ setup(
     packages=find_packages(),
     version='0.0.1',
     python_requires='>=3.6',
+    install_requires=[
+        'adversarial-robustness-toolbox',
+        'jupyterlab',
+        'matplotlib',
+        'pandas',
+        'scikit-learn',
+        'seaborn',
+        'tqdm',
+    ],
 )
