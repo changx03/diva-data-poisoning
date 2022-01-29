@@ -6,10 +6,9 @@ import time
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import torch
 import torch.nn as nn
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
 
@@ -24,13 +23,23 @@ STEP = 0.05  # Increment by every STEP value.
 TEST_SIZE = 0.2
 
 # For training the classifier:
-BATCH_SIZE = 128  # Size of mini-batch.
+BATCH_SIZE = 256
 HIDDEN_LAYER = 128  # Number of hidden neurons in a hidden layer.
-LR = 0.001  # Learning rate.
-MAX_EPOCHS = 400  # Number of iteration for training.
+LR = 0.01  # Learning rate.
+MAX_EPOCHS = 300  # Number of iteration for training.
+MOMENTUM = 0.9
 
 # For generating ALFA:
 ALFA_MAX_ITER = 3  # Number of iteration for ALFA.
+
+
+def numpy2dataloader(X, y, batch_size=BATCH_SIZE, shuffle=True):
+    dataset = TensorDataset(
+        torch.from_numpy(X).type(torch.float32),
+        torch.from_numpy(y).type(torch.int64)
+    )
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
+    return dataloader
 
 
 def poison_attack(model,
@@ -74,52 +83,22 @@ def poison_attack(model,
     return y_poison
 
 
-def batch_train_attack(path_data,
-                       path_output,
-                       advx_range,
-                       test_size,
-                       max_epochs,
-                       hidden_dim):
-    # Step 1: Load data
-    # Remove extension
-    dataname = os.path.splitext(os.path.basename(path_data))[0]
+def run_attack(path_train, path_test, dataname, advx_range, path_data, path_output):
+    print(dataname)
+    create_dir(os.path.join(path_data, 'falfa_nn'))
+    create_dir(os.path.join(path_output, 'falfa_nn'))
+    create_dir(os.path.join(path_data, 'torch'))
 
-    # Do NOT split the data, if train and test sets already exit.
-    path_clean_train = os.path.join(
-        path_output, 'train', dataname + '_clean_train.csv')
-    path_clean_test = os.path.join(
-        path_output, 'test', dataname + '_clean_test.csv')
+    df = pd.DataFrame()
 
-    # Cannot find train and test sets exist:
-    if (not os.path.exists(path_clean_train) or
-            not os.path.exists(path_clean_test)):
-        X, y, cols = open_csv(path_data, label_name='Class')
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=test_size, stratify=y)
-        # Save splits.
-        to_csv(X_train, y_train, cols, path_clean_train)
-        to_csv(X_test, y_test, cols, path_clean_test)
-    else:
-        print('Found existing train-test splits.')
-        X_train, y_train, cols = open_csv(path_clean_train)
-        X_test, y_test, _ = open_csv(path_clean_test)
-
-    # Preprocessing
-    scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)
-    X_test = scaler.transform(X_test)
+    # Load data
+    X_train, y_train, cols = open_csv(path_train)
+    X_test, y_test, _ = open_csv(path_test)
 
     # Step 2: Train and save the classifier
     # Prepare dataloader for PyTorch
-    dataset_train = TensorDataset(torch.from_numpy(X_train).type(torch.float32),
-                                  torch.from_numpy(y_train).type(torch.int64))
-    dataloader_train = DataLoader(
-        dataset_train, batch_size=BATCH_SIZE, shuffle=True)
-
-    dataset_test = TensorDataset(torch.from_numpy(X_test).type(torch.float32),
-                                 torch.from_numpy(y_test).type(torch.int64))
-    dataloader_test = DataLoader(
-        dataset_test, batch_size=BATCH_SIZE, shuffle=True)
+    dataloader_train = numpy2dataloader(X_train, y_train)
+    dataloader_test = numpy2dataloader(X_test, y_test, shuffle=False)
 
     if torch.cuda.is_available():
         device = torch.device('cuda')
@@ -128,123 +107,122 @@ def batch_train_attack(path_data,
         print('Running on CPU!')
 
     n_features = X_train.shape[1]
-    model = SimpleModel(
-        n_features, hidden_dim=hidden_dim, output_dim=2).to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=LR, momentum=0.8)
+    model = SimpleModel(n_features, hidden_dim=HIDDEN_LAYER, output_dim=2).to(device)
+    optimizer = torch.optim.SGD(model.parameters(), lr=LR, momentum=MOMENTUM)
     loss_fn = nn.CrossEntropyLoss()
 
-    create_dir(os.path.join(path_output, 'real', 'torch'))
-    path_model = os.path.join(path_output, 'real', 'torch', dataname + '_SimpleNN_flfa_0.00.torch')
-
+    path_model = os.path.join(path_data, 'torch', f'{dataname}_0.00.torch')
     if os.path.exists(path_model):
         model.load_state_dict(torch.load(path_model, map_location=device))
     else:
         # Train the clean model
         time_start = time.perf_counter()
-        train_model(model, dataloader_train, optimizer,
-                    loss_fn, device, max_epochs)
+        train_model(model, dataloader_train, optimizer, loss_fn, device, MAX_EPOCHS)
         time_elapsed = time.perf_counter() - time_start
         print('Time taken: {}'.format(time2str(time_elapsed)))
         # Save model
         torch.save(model.state_dict(), path_model)
 
     # Evaluate results
-    acc_train, loss_train = evaluate(
-        dataloader_train, model, loss_fn, device)
-    acc_test, loss_test = evaluate(dataloader_test, model, loss_fn, device)
-    print('[Clean] Train acc: {:.2f} loss: {:.3f}. Test acc: {:.2f} loss: {:.3f}'.format(
-        acc_train * 100, loss_train, acc_test * 100, loss_test,))
+    acc_train, _ = evaluate(dataloader_train, model, loss_fn, device)
+    acc_test, _ = evaluate(dataloader_test, model, loss_fn, device)
+
+    accuracy_train_clean = [acc_train] * len(advx_range)
+    accuracy_test_clean = [acc_test] * len(advx_range)
+    accuracy_train_poison = []
+    accuracy_test_poison = []
+    path_poison_data_list = []
 
     # Step 3: Generate attacks
     for p in advx_range:
-        time_start = time.perf_counter()
-        y_poison = poison_attack(model,
-                                 X_train,
-                                 y_train,
-                                 eps=p,
-                                 max_epochs=max_epochs,
-                                 optimizer=optimizer,
-                                 loss_fn=loss_fn,
-                                 batch_size=BATCH_SIZE,
-                                 device=device)
-        time_elapse = time.perf_counter() - time_start
-        print(f'Generating {p * 100:.0f}% poison labels took {time_elapse:.1f}s')
-        # Save attack
-        path_poison = os.path.join(
-            path_output,
-            'alfa_nn',
-            f'{dataname}_nn_ALFA_{np.round(p, 2):.2f}.csv')
-        to_csv(X_train, y_poison, cols, path_poison)
+        path_poison_data = os.path.join(path_data, 'falfa_nn', f'{dataname}_falfa_nn_{p:.2f}.csv')
+        try:
+            if os.path.exists(path_poison_data):
+                X_train, y_poison, _ = open_csv(path_poison_data)
+            else:
+                y_poison = poison_attack(
+                    model,
+                    X_train,
+                    y_train,
+                    eps=p,
+                    max_epochs=MAX_EPOCHS,
+                    optimizer=optimizer,
+                    loss_fn=loss_fn,
+                    batch_size=BATCH_SIZE,
+                    device=device,
+                )
+                # Save attack
+                to_csv(X_train, y_poison, cols, path_poison_data)
+                print('Poison rate:', np.mean(y_poison != y_train))
 
-        # Step 4: Evaluation
-        print('Poison rate:', np.mean(y_poison != y_train))
+            # Step 4: Evaluation
+            dataloader_poison = numpy2dataloader(X_train, y_poison)
 
-        dataset_poison = TensorDataset(
-            torch.from_numpy(X_train).type(torch.float32),
-            torch.from_numpy(y_poison).type(torch.int64),
-        )
-        dataloader_poison = DataLoader(
-            dataset_poison, batch_size=BATCH_SIZE, shuffle=True)
+            # Train the poison model
+            poisoned_model = SimpleModel(n_features, hidden_dim=HIDDEN_LAYER, output_dim=2).to(device)
+            optimizer_poison = torch.optim.SGD(poisoned_model.parameters(), lr=LR, momentum=MOMENTUM)
 
-        # Train the poison model
-        model_poison = SimpleModel(n_features, hidden_dim=hidden_dim, output_dim=2).to(device)
-        optimizer_poison = torch.optim.SGD(model_poison.parameters(), lr=LR, momentum=0.8)
+            path_model = os.path.join(path_data, 'torch', f'{dataname}_{p:.2f}.torch')
+            if os.path.exists(path_model):
+                poisoned_model.load_state_dict(torch.load(path_model, map_location=device))
+            else:
+                train_model(poisoned_model, dataloader_poison, optimizer_poison, loss_fn, device, MAX_EPOCHS)
+                torch.save(poisoned_model.state_dict(), path_model)
 
-        path_model = os.path.join(path_output, 'real', 'torch', f'{dataname}_SimpleNN_flfa_{p:.2f}.torch')
-        if os.path.exists(path_model):
-            model.load_state_dict(torch.load(path_model, map_location=device))
-        else:
-            train_model(model_poison, dataloader_poison, optimizer_poison,loss_fn, device, max_epochs)
-            torch.save(model.state_dict(), path_model)
+            acc_poison, _ = evaluate(dataloader_poison, poisoned_model, loss_fn, device)
+            acc_test, _ = evaluate(dataloader_test, poisoned_model, loss_fn, device)
+        except Exception as e:
+            print(e)
+            acc_poison = 0
+            acc_test = 0
 
-        acc_poison, _ = evaluate(
-            dataloader_poison, model_poison, loss_fn, device)
-        acc_test, _ = evaluate(
-            dataloader_test, model_poison, loss_fn, device)
-        print('Accuracy on {:.2f}% poison data train: {:.2f} test: {:.2f}'.format(
-            p * 100, acc_poison * 100, acc_test * 100))
+        print('P-Rate [{:.2f}] Acc  P-train: {:.2f} C-test: {:.2f}'.format(p * 100, acc_poison * 100, acc_test * 100))
+        path_poison_data_list.append(path_poison_data)
+        accuracy_train_poison.append(acc_poison)
+        accuracy_test_poison.append(acc_test)
+    # Save results
+    data = {
+        'Data': np.tile(dataname, reps=len(advx_range)),
+        'Path.Train': np.tile(path_train, reps=len(advx_range)),
+        'Path.Poison': path_poison_data_list,
+        'Path.Test': np.tile(path_test, reps=len(advx_range)),
+        'Rate': advx_range,
+        'Train.Clean': accuracy_train_clean,
+        'Test.Clean': accuracy_test_clean,
+        'Train.Poison': accuracy_train_poison,
+        'Test.Poison': accuracy_test_poison,
+    }
+    df = pd.DataFrame(data)
+    df.to_csv(os.path.join(path_output, f'{dataname}_falfa_nn_score.csv'), index=False)
 
 
 if __name__ == '__main__':
+    # Example:
+    # python ./experiments/real/Step2_FALFA_NN.py -f data/real -d "breastcancer_std"
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filepath', type=str, required=True,
-                        help='The file path of the data')
-    parser.add_argument('-o', '--output', type=str, required=True,
-                        help='The output path')
-    parser.add_argument('-s', '--step', type=float, default=STEP,
+                        help='The path of the data')
+    parser.add_argument('-d', '--dataset', type=str, required=True,
+                        help='Dataset name')
+    parser.add_argument('-o', '--output', type=str, default='results/real',
+                        help='The output path for scores.')
+    parser.add_argument('-s', '--step', type=float, default=0.05,
                         help='Spacing between values. Default=0.05')
-    parser.add_argument('-m', '--max', type=float, default=0.49,
-                        help='End of interval. Default=0.49')
-    parser.add_argument('-t', '--test', type=float, default=TEST_SIZE,
-                        help='Test set size.')
-    parser.add_argument('-e', '--epoch', type=int, default=MAX_EPOCHS,
-                        help='Maximum number of epochs.')
-    parser.add_argument('--hidden', type=int, default=HIDDEN_LAYER,
-                        help='Number of neurons in a hidden layer.')
+    parser.add_argument('-m', '--max', type=float, default=0.41,
+                        help='End of interval. Default=0.41')
     args = parser.parse_args()
-    filepath = Path(args.filepath).absolute()
-    output = args.output
+    filepath = str(Path(args.filepath).absolute())
+    dataset = args.dataset
+    output = str(Path(args.output).absolute())
     step = args.step
     max_ = args.max
-    test_size = args.test
-    test_size = int(test_size) if test_size > 1. else float(test_size)
-    max_epochs = args.epoch
-    hidden_dim = args.hidden
 
-    advx_range = np.arange(0, max_, step)[1:]  # Remove 0%
+    advx_range = np.arange(0, max_, step)
 
-    print(f'Path: {filepath}')
-    print(f'Range: {advx_range}')
+    print('Path:', filepath)
+    print('Range:', advx_range)
 
-    # Create directory if not exist
-    create_dir(os.path.join(output, 'alfa_nn'))
-    create_dir(os.path.join(output, 'train'))
-    create_dir(os.path.join(output, 'test'))
-    create_dir(os.path.join(output, 'torch'))
+    path_train = os.path.join(filepath, 'train', f'{dataset}_train.csv')
+    path_test = os.path.join(filepath, 'test', f'{dataset}_test.csv')
 
-    batch_train_attack(path_data=filepath,
-                       path_output=output,
-                       advx_range=advx_range,
-                       test_size=test_size,
-                       max_epochs=max_epochs,
-                       hidden_dim=hidden_dim)
+    run_attack(path_train, path_test, dataset, advx_range, filepath, output)

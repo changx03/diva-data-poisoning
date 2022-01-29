@@ -61,7 +61,7 @@ def run_random_flipping(path_train, path_test, dataname, advx_range, path_data, 
         path_poison_data = os.path.join(path_data, 'rand_svm', f'{dataname}_rand_svm_{p:.2f}.csv')
         try:
             if os.path.exists(path_poison_data):
-                _, y_flip, _ = open_csv(path_poison_data)
+                X_train, y_flip, _ = open_csv(path_poison_data)
             else:
                 y_flip = flip_random(y_train, p)
                 to_csv(X_train, y_flip, cols, path_poison_data)

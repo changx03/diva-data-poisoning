@@ -6,6 +6,14 @@ python ./experiments/synth/Step1_GenDataByDifficulty.py -n 150 -f "synth/full"
 echo "Step 1: Split synth data..."
 python ./experiments/synth/Step1_TrainTestSplit.py -f "data/synth/full" -o "data/synth"
 
+echo "Step 2: Generating noise..."
+python ./experiments/synth/Step2_RandomFlip.py -f "data/synth/"
+echo "Step 3: Computing C-Measures on noisy data..."
+mkdir -p ./results/synth/rand/
+Rscript ./experiments/synth/Step3_CMeasure.R "./data/synth/rand/" "./results/synth/rand/" "synth_cmeasure_rand"
+echo "Step 4: Save meta-database..."
+python ./experiments/synth/Step4_ToMetaDb.py -c "results/synth/rand" -s "results/synth/synth_rand_svm_score.csv" -o "results/synth/synth_rand_db.csv"
+
 echo "Step 2: Running FALFA on Neural Network classifier..."
 python ./experiments/synth/Step2_FALFA_NN.py -f "./data/synth/" -o "./results/synth"
 echo "Step 3: Computing C-Measures on FALFA NN..."
@@ -19,14 +27,6 @@ echo "Step 3: Computing C-Measures on ALFA SVM..."
 Rscript ./experiments/synth/Step3_CMeasure.R "./data/synth/alfa_svm/" "./results/synth/alfa_svm/" "synth_cmeasure_alfa_svm"
 echo "Step 4: Save meta-database..."
 python ./experiments/synth/Step4_ToMetaDb.py -c "results/synth/alfa_svm" -s "results/synth/synth_alfa_svm_score.csv" -o "results/synth/synth_alfa_svm_db.csv"
-
-echo "Step 2: Generating noise..."
-python ./experiments/synth/Step2_RandomFlip.py -f "data/synth/"
-echo "Step 3: Computing C-Measures on noisy data..."
-mkdir -p ./results/synth/rand/
-Rscript ./experiments/synth/Step3_CMeasure.R "./data/synth/rand/" "./results/synth/rand/" "synth_cmeasure_rand"
-echo "Step 4: Save meta-database..."
-python ./experiments/synth/Step4_ToMetaDb.py -c "results/synth/rand" -s "results/synth/synth_rand_svm_score.csv" -o "results/synth/synth_rand_db.csv"
 
 
 echo "By noise ================================================================="

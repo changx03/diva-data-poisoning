@@ -140,7 +140,7 @@ def batch_train_attack(train_list, test_list, advx_range, path_data, path_output
             path_poison_data = os.path.join(path_data, 'falfa_nn', f'{dataname}_falfa_nn_{p:.2f}.csv')
             try:
                 if os.path.exists(path_poison_data):
-                    _, y_poison, _ = open_csv(path_poison_data)
+                    X_train, y_poison, _ = open_csv(path_poison_data)
                 else:
                     y_poison = poison_attack(model,
                                             X_train,

@@ -193,8 +193,8 @@ if __name__ == '__main__':
                         help='The output path for scores.')
     parser.add_argument('-s', '--step', type=float, default=0.1,
                         help='Spacing between values. Default=0.1')
-    parser.add_argument('-m', '--max', type=float, default=0.41,
-                        help='End of interval. Default=0.41')
+    parser.add_argument('-m', '--max', type=float, default=0.31,
+                        help='End of interval. Default=0.31')
     args = parser.parse_args()
     filepath = str(Path(args.filepath).absolute())
     dataset = args.dataset

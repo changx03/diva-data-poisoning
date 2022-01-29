@@ -69,7 +69,7 @@ def gen_random_labels(train_list, test_list, advx_range, path_data, path_output)
             path_poison_data = os.path.join(path_data, 'rand', f'{dataname}_rand_{p:.2f}.csv')
             try:
                 if os.path.exists(path_poison_data):
-                    _, y_flip, _ = open_csv(path_poison_data)
+                    X_train, y_flip, _ = open_csv(path_poison_data)
                 else:
                     if p == 0:
                         y_flip = y_train

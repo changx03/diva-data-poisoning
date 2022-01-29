@@ -93,7 +93,7 @@ def run_poison_attack(path_train, path_test, dataname, advx_range, path_data, pa
         time_start = time.time()
         try:
             if os.path.exists(path_poison_data):
-                _, y_flip, _ = open_csv(path_poison_data)
+                X_train, y_flip, _ = open_csv(path_poison_data)
             else:
                 y_flip = get_y_flip(X_train, y_train, p, clf)
                 to_csv(X_train, y_flip, cols, path_poison_data)

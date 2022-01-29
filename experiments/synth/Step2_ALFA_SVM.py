@@ -64,7 +64,7 @@ def compute_and_save_flipped_data(X_train, y_train, X_test, y_test, clf, path_ou
         path_poison_data = '{}_alfa_svm_{:.2f}.csv'.format(path_output_base, np.round(p, 2))
         try:
             if os.path.exists(path_poison_data):
-                _, y_flip, _ = open_csv(path_poison_data)
+                X_train, y_flip, _ = open_csv(path_poison_data)
             else:
                 time_start = time.time()
                 y_flip = get_y_flip(X_train, y_train, p, clf)
