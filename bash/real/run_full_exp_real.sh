@@ -16,5 +16,5 @@ do
     python ./experiments/real/Step2_SecMLPoisoningSVM.py -f "data/real" -o "results/real" -d $DATA
 
     echo "Step 3: Computing C-Measures on SecML Poisoning SVM ======================"
-    Rscript ./experiments/real/Step3_CMeasure.R "./data/real/poison_svm/" "./results/poison_svm/$DATA\_cmeasure_poison_svm_.csv" $DATA
+    Rscript ./experiments/real/Step3_CMeasure.R "./data/real/poison_svm/" "./results/real/poison_svm/$DATA\_cmeasure_poison_svm_.csv" $DATA
 done
