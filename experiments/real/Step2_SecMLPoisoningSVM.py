@@ -34,7 +34,7 @@ SOLVER_PARAMS = {
     'eta': 0.05,
     'eta_min': 0.05,
     'eta_max': None,
-    'max_iter': 100,
+    'max_iter': 200,
     'eps': 1e-6
 }
 
@@ -191,8 +191,8 @@ if __name__ == '__main__':
                         help='Dataset name')
     parser.add_argument('-o', '--output', type=str, default='results/real',
                         help='The output path for scores.')
-    parser.add_argument('-s', '--step', type=float, default=0.1,
-                        help='Spacing between values. Default=0.1')
+    parser.add_argument('-s', '--step', type=float, default=0.05,
+                        help='Spacing between values. Default=0.05')
     parser.add_argument('-m', '--max', type=float, default=0.31,
                         help='End of interval. Default=0.31')
     args = parser.parse_args()
