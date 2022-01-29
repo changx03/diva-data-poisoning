@@ -23,10 +23,15 @@ warnings.filterwarnings('ignore')
 
 ALFA_MAX_ITER = 5  # Number of iteration for ALFA.
 N_ITER_SEARCH = 50  # Number of iteration for SVM parameter tuning.
-SVM_PARAM_DICT = {
-    'C': loguniform(1e0, 1e3),
-    'gamma': loguniform(1e-4, 1e2),
-    'kernel': ['rbf'],
+# SVM_PARAM_DICT = {
+#     'C': loguniform(1e0, 1e3),
+#     'gamma': loguniform(1e-4, 1e2),
+#     'kernel': ['rbf'],
+# }
+# USE THE PARAMETERS FROM ORIGINAL PAPER
+BEST_PARAMS = {
+    'C': 1,
+    'gamma': 10,
 }
 
 
@@ -107,20 +112,17 @@ def gen_poison_labels(train_list, test_list, advx_range, path_data, path_output)
             best_params = open_json(path_svm_json)
         else:
             # Tune parameters
-            clf = SVC()
-            random_search = RandomizedSearchCV(
-                clf,
-                param_distributions=SVM_PARAM_DICT,
-                n_iter=N_ITER_SEARCH,
-                cv=5,
-                n_jobs=-1,
-            )
-            random_search.fit(X_train, y_train)
-            best_params = random_search.best_params_
-            # best_params = {
-            #     'C': 1,
-            #     'gamma': 10,
-            # }
+            # clf = SVC()
+            # random_search = RandomizedSearchCV(
+            #     clf,
+            #     param_distributions=SVM_PARAM_DICT,
+            #     n_iter=N_ITER_SEARCH,
+            #     cv=5,
+            #     n_jobs=-1,
+            # )
+            # random_search.fit(X_train, y_train)
+            # best_params = random_search.best_params_
+            best_params = BEST_PARAMS
             # Save SVM params as JSON
             to_json(best_params, path_svm_json)
         print('Best params:', best_params)
