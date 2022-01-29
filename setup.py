@@ -4,8 +4,6 @@ To install this local package
     python -m pip install .
 To upgrade this package
     python -m pip install --upgrade .
-
-TODO: Add the list of required packages
 """
 from setuptools import setup, find_packages
 
@@ -16,11 +14,12 @@ setup(
     version='0.0.1',
     python_requires='>=3.6',
     install_requires=[
-        'adversarial-robustness-toolbox',
+        'adversarial-robustness-toolbox==1.9.1',
+        'imbalanced-learn==0.9.0',
         'jupyterlab',
         'matplotlib',
         'pandas',
-        'scikit-learn',
+        'scikit-learn==1.0.2',
         'seaborn',
         'tqdm',
     ],

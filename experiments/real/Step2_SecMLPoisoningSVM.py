@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from imblearn.under_sampling import RandomUnderSampler
 from secml.adv.attacks import CAttackPoisoningSVM
 from secml.array import CArray
 from secml.data import CDataset
@@ -78,12 +79,14 @@ def run_poison_attack(path_train, path_test, dataname, advx_range, path_data, pa
     print('Best params:', best_params)
 
     # Train model
-    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2)
-
     clf = SVC(C=best_params['C'], gamma=best_params['gamma'], kernel='rbf')
     clf.fit(X_train, y_train)
     acc_train_clean = clf.score(X_train, y_train)
     acc_test_clean = clf.score(X_test, y_test)
+
+    rus = RandomUnderSampler()
+    X_res, y_res = rus.fit_resample(X_train, y_train)
+    X_tr, X_val, y_tr, y_val = train_test_split(X_res, y_res, test_size=0.2)
 
     accuracy_train_clean = [acc_train_clean] * len(advx_range)
     accuracy_test_clean = [acc_test_clean] * len(advx_range)
@@ -106,8 +109,8 @@ def run_poison_attack(path_train, path_test, dataname, advx_range, path_data, pa
                     acc_test_pois = acc_test_clean
                 else:
                     # Using SecML wrapper
-                    cX_train = CArray(X_train)
-                    cy_train = CArray(y_train)
+                    cX_train = CArray(X_tr)
+                    cy_train = CArray(y_tr)
                     cX_val = CArray(X_val)
                     cy_val = CArray(y_val)
                     cX_test = CArray(X_test)
@@ -136,13 +139,14 @@ def run_poison_attack(path_train, path_test, dataname, advx_range, path_data, pa
                     attack.xc = xc
                     attack.yc = yc
 
-                    n_poison = int(np.floor(X_train.shape[0] * p))
+                    n_poison = int(np.floor(X_tr.shape[0] * p))
+                    print(f'Train size: {X_train.shape[0]} Poison Size: {X_tr.shape[0]} N Poison Pts: {n_poison}')
                     attack.n_points = n_poison
 
                     # Running attack
                     _, _, pois_examples, _ = attack.run(cX_test, cy_test)
-                    X_pois = np.vstack([X_train, pois_examples.X.get_data()])
-                    y_pois = np.concatenate([y_train, pois_examples.Y.get_data()])
+                    X_pois = np.vstack([X_tr, pois_examples.X.get_data()])
+                    y_pois = np.concatenate([y_tr, pois_examples.Y.get_data()])
                 # Save poisoned data
                 to_csv(X_pois, y_pois, cols, path_poison_data)
 
