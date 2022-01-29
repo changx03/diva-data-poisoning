@@ -1,9 +1,9 @@
 """Generate synthetic data.
 """
 import argparse
-import glob
 import math
 import os
+from glob import glob
 from pathlib import Path
 
 import numpy as np
@@ -42,7 +42,7 @@ def gen_synth_data(data_path, param, bins):
         param['n_samples'],
         param['flip_y']
     )
-    data_list = glob.glob(os.path.join(data_path, file_name + '*.csv'))
+    data_list = sorted(glob(os.path.join(data_path, file_name + '*.csv')))
     file_name += str(len(data_list) + 1)
     path_output = os.path.join(data_path, f'{file_name}.csv')
     df.to_csv(path_output, index=False)

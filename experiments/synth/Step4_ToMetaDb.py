@@ -47,7 +47,7 @@ COL_NAMES = [
 
 
 def create_database(path_cm, path_score, path_output):
-    cMeasure_list = glob(os.path.join(path_cm, '*.csv'))
+    cMeasure_list = sorted(glob(os.path.join(path_cm, '*.csv')))
     print(f'Found {len(cMeasure_list)} C-Measures files')
 
     # Load C-Measures

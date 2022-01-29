@@ -14,7 +14,7 @@ TEST_SIZE = 0.2
 
 
 def split_data(path_data, path_output, test_size):
-    path_list = glob(os.path.join(path_data, '*.csv'))
+    path_list = sorted(glob(os.path.join(path_data, '*.csv')))
     print(f'Found {len(path_list)} datasets.')
 
     for p in path_list:
