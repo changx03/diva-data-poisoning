@@ -141,8 +141,8 @@ if __name__ == '__main__':
                         help='Dataset name')
     parser.add_argument('-o', '--output', type=str, default='results/real',
                         help='The output path for scores.')
-    parser.add_argument('-s', '--step', type=float, default=0.1,
-                        help='Spacing between values. Default=0.1')
+    parser.add_argument('-s', '--step', type=float, default=0.05,
+                        help='Spacing between values. Default=0.05')
     parser.add_argument('-m', '--max', type=float, default=0.41,
                         help='End of interval. Default=0.41')
     args = parser.parse_args()

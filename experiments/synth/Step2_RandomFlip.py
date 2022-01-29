@@ -12,10 +12,10 @@ from sklearn.utils.fixes import loguniform
 from label_flip_revised import flip_random
 from label_flip_revised.utils import create_dir, open_csv, to_csv, open_json, to_json
 
-N_ITER_SEARCH = 20  # Number of iteration for SVM parameter tuning.
+N_ITER_SEARCH = 50  # Number of iteration for SVM parameter tuning.
 SVM_PARAM_DICT = {
-    'C': loguniform(1e0, 1e3),
-    'gamma': loguniform(1e-4, 0.1),
+    'C': loguniform(0.01, 10),
+    'gamma': loguniform(0.01, 10),
     'kernel': ['rbf'],
 }
 
