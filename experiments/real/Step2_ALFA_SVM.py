@@ -7,36 +7,38 @@ import warnings
 from pathlib import Path
 
 import numpy as np
-from sklearn.model_selection import RandomizedSearchCV, train_test_split
+import pandas as pd
+from sklearn.model_selection import RandomizedSearchCV
 from sklearn.svm import SVC
 from sklearn.utils.fixes import loguniform
-from sklearn.preprocessing import StandardScaler
 
 from label_flip_revised import alfa
-from label_flip_revised.utils import (create_dir, open_csv, open_json, to_csv,
-                                      to_json, transform_label)
-
+from label_flip_revised.utils import (create_dir, open_csv, open_json,
+                                      time2str, to_csv, to_json,
+                                      transform_label)
+                                      
 # Ignore warnings from optimization.
 # The optimization step in ALFA may fail. The attack still works despite the optimization failed.
 warnings.filterwarnings('ignore')
 
 ALFA_MAX_ITER = 5  # Number of iteration for ALFA.
-# N_ITER_SEARCH = 50  # Number of iteration for SVM parameter tuning.
-# SVM_PARAM_DICT = {
-#     'C': loguniform(1e0, 1e3),
-#     'gamma': loguniform(1e-4, 1e2),
-#     'kernel': ['rbf'],
-# }
-# USE THE PARAMETERS FROM ORIGINAL PAPER
-BEST_PARAMS = {
-    'C': 1,
-    'gamma': 10,
+N_ITER_SEARCH = 50  # Number of iteration for SVM parameter tuning.
+SVM_PARAM_DICT = {
+    'C': loguniform(0.01, 10),
+    'gamma': loguniform(0.01, 10),
+    'kernel': ['rbf'],
 }
-STEP = 0.1  # Increment by every STEP value.
-TEST_SIZE = 0.2
+# # USE THE PARAMETERS FROM ORIGINAL PAPER
+# BEST_PARAMS = {
+#     'C': 1,
+#     'gamma': 10,
+# }
 
 
 def get_y_flip(X_train, y_train, p, svc):
+    if p == 0:
+        return y_train
+
     # Transform labels from {0, 1} to {-1, 1}
     y_train = transform_label(y_train, target=-1)
     y_flip = alfa(X_train, y_train,
@@ -48,138 +50,114 @@ def get_y_flip(X_train, y_train, p, svc):
     return y_flip
 
 
-def compute_and_save_flipped_data(X, y, clf, path_output_base, cols, advx_range):
-    for p in advx_range:
-        time_start = time.time()
-        y_flip = get_y_flip(X, y, p, clf)
-        time_elapse = time.time() - time_start
-        print('Generating {:.0f}% poison labels took {:.1f}s'.format(
-            p * 100, time_elapse))
+def run_poison_attack(path_train, path_test, dataname, advx_range, path_data, path_output):
+    print(dataname)
+    create_dir(os.path.join(path_data, 'alfa_svm'))
+    create_dir(os.path.join(path_output, 'alfa_svm'))
 
-        path_output = '{}_rbf_ALFA_{:.2f}.csv'.format(
-            path_output_base, np.round(p, 2))
-        to_csv(X, y_flip, cols, path_output)
+    df = pd.DataFrame()
 
+    # Load data
+    X_train, y_train, cols = open_csv(path_train)
+    X_test, y_test, _ = open_csv(path_test)
 
-def eval_outputs(path_file, dataname):
-    path_data_test = os.path.join(
-        path_file, 'test', dataname + '_clean_test.csv')
-    X_test, y_test, _ = open_csv(path_data_test)
-
-    # Load SVM parameters from a JSON file
-    path_json_param = os.path.join(path_file, 'alfa', dataname + '_svm.json')
-    svm_param = open_json(path_json_param)
-
-    for p in advx_range:
-        path_data_train = os.path.join(
-            path_file, 'alfa', dataname + '_rbf_ALFA_{:.2f}.csv'.format(np.round(p, 2)))
-        X_train, y_train, _ = open_csv(path_data_train)
-        clf = SVC(**svm_param)
-        clf.fit(X_train, y_train)
-        acc_train = clf.score(X_train, y_train)
-        acc_test = clf.score(X_test, y_test)
-        print('Accuracy on {:.2f}% poison data train: {:.2f} test: {:.2f}'.format(
-            p * 100, acc_train * 100, acc_test * 100))
-
-
-def gen_poison_labels(path_data,
-                      path_output,
-                      advx_range,
-                      test_size):
-
-    X, y, cols = open_csv(path_data, label_name='Class')
-
-    # Remove extension
-    dataname = os.path.splitext(os.path.basename(path_data))[0]
-
-    # Tune parameters
-    # clf = SVC()
-    # random_search = RandomizedSearchCV(clf, param_distributions=SVM_PARAM_DICT,
-    #                                    n_iter=N_ITER_SEARCH, cv=5, n_jobs=-1)
-    # random_search.fit(X, y)
-    # best_params = random_search.best_params_
-    best_params = BEST_PARAMS
-    # Save SVM params as JSON
-    path_svm_json = os.path.join(
-        path_output, 'alfa', dataname + '_svm.json')
-    to_json(best_params, path_svm_json)
-
-    # Do NOT split the data, if train and test sets already exit.
-    path_clean_train = os.path.join(
-        path_output, 'train', dataname + '_clean_train.csv')
-    path_clean_test = os.path.join(
-        path_output, 'test', dataname + '_clean_test.csv')
-
-    # Cannot find existing train and test sets:
-    if (not os.path.exists(path_clean_train) or
-            not os.path.exists(path_clean_test)):
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=test_size, stratify=y)
-        # Save splits.
-        to_csv(X_train, y_train, cols, path_clean_train)
-        to_csv(X_test, y_test, cols, path_clean_test)
+    path_svm_json = os.path.join(path_output, 'alfa_svm', dataname + '_svm.json')
+    if os.path.exists(path_svm_json):
+        best_params = open_json(path_svm_json)
     else:
-        print('Found existing train-test splits.')
-        X_train, y_train, cols = open_csv(path_clean_train)
-        X_test, y_test, _ = open_csv(path_clean_test)
-
-    # Preprocessing
-    scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)
-    X_test = scaler.transform(X_test)
+        # Tune parameters
+        clf = SVC()
+        random_search = RandomizedSearchCV(clf, param_distributions=SVM_PARAM_DICT,
+                                           n_iter=N_ITER_SEARCH, cv=5, n_jobs=-1)
+        random_search.fit(X_train, y_train)
+        best_params = random_search.best_params_
+        # best_params = BEST_PARAMS
+        # Save SVM params as JSON
+        to_json(best_params, path_svm_json)
 
     # Train model
-    clf = SVC(**best_params)
+    clf = SVC(C=best_params['C'], gamma=best_params['gamma'], kernel='rbf')
     clf.fit(X_train, y_train)
-    print(f'Train shape: {X_train.shape}, test shape: {X_test.shape}')
+    acc_train_clean = clf.score(X_train, y_train)
+    acc_test_clean = clf.score(X_test, y_test)
 
-    acc_train = clf.score(X_train, y_train)
-    acc_test = clf.score(X_test, y_test)
-
-    print('[{}] Acc on clean train: {:.2f} test: {:.2f}'.format(
-        dataname, acc_train * 100, acc_test * 100))
+    accuracy_train_clean = [acc_train_clean] * len(advx_range)
+    accuracy_test_clean = [acc_test_clean] * len(advx_range)
+    accuracy_train_poison = []
+    accuracy_test_poison = []
+    path_poison_data_list = []
 
     # Generate poison labels
-    compute_and_save_flipped_data(
-        X_train, y_train, clf,
-        os.path.join(path_output, 'alfa', dataname),
-        cols, advx_range)
+    for p in advx_range:
+        path_poison_data = os.path.join(path_data, 'alfa_svm', f'{dataname}_alfa_svm_{p:.2f}.csv')
+        time_start = time.time()
+        try:
+            if os.path.exists(path_poison_data):
+                _, y_flip, _ = open_csv(path_poison_data)
+            else:
+                y_flip = get_y_flip(X_train, y_train, p, clf)
+                to_csv(X_train, y_flip, cols, path_poison_data)
 
-    # Read CSV files and test results
-    eval_outputs(path_output, dataname)
+            svm_params = clf.get_params()
+            clf_poison = SVC(**svm_params)
+            clf_poison.fit(X_train, y_flip)
+            acc_train_poison = clf_poison.score(X_train, y_flip)
+            acc_test_poison = clf_poison.score(X_test, y_test)
+        except Exception as e:
+            print(e)
+            acc_train_poison = 0
+            acc_test_poison = 0
+        time_elapse = time.time() - time_start
+        print('Time: [{}] P-Rate {:.2f} Acc  P-train: {:.2f} C-test: {:.2f}'.format(
+            time2str(time_elapse), p * 100, acc_train_poison * 100, acc_test_poison * 100))
+        path_poison_data_list.append(path_poison_data)
+        accuracy_train_poison.append(acc_train_poison)
+        accuracy_test_poison.append(acc_test_poison)
+
+    # Save results
+    data = {
+        'Data': np.tile(dataname, reps=len(advx_range)),
+        'Path.Train': np.tile(path_train, reps=len(advx_range)),
+        'Path.Poison': path_poison_data_list,
+        'Path.Test': np.tile(path_test, reps=len(advx_range)),
+        'Rate': advx_range,
+        'Train.Clean': accuracy_train_clean,
+        'Test.Clean': accuracy_test_clean,
+        'Train.Poison': accuracy_train_poison,
+        'Test.Poison': accuracy_test_poison,
+    }
+    df_ = pd.DataFrame(data)
+    df = pd.concat([df, df_])
+    df.to_csv(os.path.join(path_output, f'{dataname}_alfa_svm_score.csv'), index=False)
 
 
 if __name__ == '__main__':
+    # Example:
+    # python ./experiments/real/Step2_ALFA_SVM.py -f data/real -d "breastcancer_std"
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filepath', type=str, required=True,
-                        help='The file path of the data')
-    parser.add_argument('-o', '--output', type=str, required=True,
-                        help='The output path')
-    parser.add_argument('-s', '--step', type=float, default=STEP,
+                        help='The path of the data')
+    parser.add_argument('-d', '--dataset', type=str, required=True,
+                        help='Dataset name')
+    parser.add_argument('-o', '--output', type=str, default='results/real',
+                        help='The output path for scores.')
+    parser.add_argument('-s', '--step', type=float, default=0.1,
                         help='Spacing between values. Default=0.1')
-    parser.add_argument('-m', '--max', type=float, default=0.49,
-                        help='End of interval. Default=0.49')
-    parser.add_argument('-t', '--test', type=float, default=TEST_SIZE,
-                        help='Test set size.')
+    parser.add_argument('-m', '--max', type=float, default=0.41,
+                        help='End of interval. Default=0.41')
     args = parser.parse_args()
-    filepath = Path(args.filepath).absolute()
-    output = args.output
+    filepath = str(Path(args.filepath).absolute())
+    dataset = args.dataset
+    output = str(Path(args.output).absolute())
     step = args.step
     max_ = args.max
-    test_size = args.test
-    test_size = int(test_size) if test_size > 1. else float(test_size)
 
-    advx_range = np.arange(0, max_, step)[1:]  # Remove 0%
+    advx_range = np.arange(0, max_, step)
 
-    print(f'Path: {filepath}')
-    print(f'Range: {advx_range}')
+    print('Path:', filepath)
+    print('Range:', advx_range)
 
-    # Create directory if not exist
-    create_dir(os.path.join(output, 'alfa'))
-    create_dir(os.path.join(output, 'train'))
-    create_dir(os.path.join(output, 'test'))
+    path_train = os.path.join(filepath, 'train', f'{dataset}_train.csv')
+    path_test = os.path.join(filepath, 'test', f'{dataset}_test.csv')
 
-    gen_poison_labels(path_data=filepath,
-                      path_output=output,
-                      advx_range=advx_range,
-                      test_size=test_size)
+    run_poison_attack(path_train, path_test, dataset, advx_range, filepath, output)

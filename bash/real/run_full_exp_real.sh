@@ -13,8 +13,17 @@ DATASETS=("abalone_subset_std" "australian_std" "banknote_std" "breastcancer_std
 for DATA in "${DATASETS[@]}";
 do
     echo "Step 2: Running SecML Poisoning SVM ======================================"
-    python ./experiments/real/Step2_SecMLPoisoningSVM.py -f "data/real" -o "results/real" -d $DATA
+    python ./experiments/real/Step2_SecMLPoisoningSVM.py -f "data/real" -d $DATA
 
     echo "Step 3: Computing C-Measures on SecML Poisoning SVM ======================"
     Rscript ./experiments/real/Step3_CMeasure.R "./data/real/poison_svm/" "./results/real/poison_svm/${DATA}_cmeasure_poison_svm.csv" $DATA
+done
+
+for DATA in "${DATASETS[@]}";
+do
+    echo "Step 2: Running ALFA SVM ======================================"
+    python ./experiments/real/Step2_ALFA_SVM.py -f "data/real" -d $DATA
+
+    echo "Step 3: Computing C-Measures on ALFA SVM ======================"
+    Rscript ./experiments/real/Step3_CMeasure.R "./data/real/alfa_svm/" "./results/real/alfa_svm/${DATA}_cmeasure_alfa_svm.csv" $DATA
 done
