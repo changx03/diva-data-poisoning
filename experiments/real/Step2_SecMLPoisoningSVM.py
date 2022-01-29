@@ -50,6 +50,7 @@ def run_poison_attack(path_train, path_test, dataname, advx_range, path_data, pa
     X_train = scaler.fit_transform(X_train)
     X_test = scaler.transform(X_test)
     clip_values = (X_train.min(), X_train.max())
+    print('X Range:', clip_values)
 
     path_svm_json = os.path.join(path_output, 'poison_svm', f'{dataname}_svm.json')
     if os.path.exists(path_svm_json):
@@ -90,64 +91,72 @@ def run_poison_attack(path_train, path_test, dataname, advx_range, path_data, pa
 
     # Generate poison labels
     for p in tqdm(advx_range):
+        path_poison_data = os.path.join(path_data, 'poison_svm', f'{dataname}_poison_svm_{p:.2f}.csv')
         time_start = time.time()
-        if p == 0:
-            X_poisoned = X_train
-            y_poisoned = y_train
-            acc_train_pois = acc_train_clean
-            acc_test_pois = acc_test_clean
-        else:
-            # Using SecML wrapper
-            cX_train = CArray(X_train)
-            cy_train = CArray(y_train)
-            cX_val = CArray(X_val)
-            cy_val = CArray(y_val)
+        try:
+            if os.path.exists(path_poison_data):
+                X_pois, y_pois, _ = open_csv(path_poison_data)
+            else:
+                if p == 0:
+                    X_pois = X_train
+                    y_pois = y_train
+                    acc_train_pois = acc_train_clean
+                    acc_test_pois = acc_test_clean
+                else:
+                    # Using SecML wrapper
+                    cX_train = CArray(X_train)
+                    cy_train = CArray(y_train)
+                    cX_val = CArray(X_val)
+                    cy_val = CArray(y_val)
 
-            train_set = CDataset(cX_train, cy_train)
-            val_set = CDataset(cX_val, cy_val)
+                    train_set = CDataset(cX_train, cy_train)
+                    val_set = CDataset(cX_val, cy_val)
 
-            clf = CClassifierSVM(C=best_params['C'], kernel=CKernelRBF(gamma=best_params['gamma']))
-            clf.fit(X_train, y_train)
+                    clf = CClassifierSVM(C=best_params['C'], kernel=CKernelRBF(gamma=best_params['gamma']))
+                    clf.fit(X_train, y_train)
 
-            attack = CAttackPoisoningSVM(
-                classifier=clf,
-                training_data=train_set,
-                val=val_set,
-                lb=clip_values[0],
-                ub=clip_values[1],
-                solver_params=SOLVER_PARAMS,
-            )
+                    attack = CAttackPoisoningSVM(
+                        classifier=clf,
+                        training_data=train_set,
+                        val=val_set,
+                        lb=clip_values[0],
+                        ub=clip_values[1],
+                        solver_params=SOLVER_PARAMS,
+                    )
 
-            # Initial poisoning sample
-            xc = train_set[0, :].X
-            yc = train_set[0, :].Y
+                    # Initial poisoning sample
+                    xc = train_set[0, :].X
+                    yc = train_set[0, :].Y
 
-            attack.x0 = xc
-            attack.xc = xc
-            attack.yc = yc
+                    attack.x0 = xc
+                    attack.xc = xc
+                    attack.yc = yc
 
-            n_poison = int(np.floor(X_train.shape[0] * p))
-            attack.n_points = n_poison
+                    n_poison = int(np.floor(X_train.shape[0] * p))
+                    attack.n_points = n_poison
 
-            # Running attack
-            _, _, pois_examples, _ = attack.run(X_val, y_val)
-            X_poisoned = np.vstack([X_train.get_data(), pois_examples.X.get_data()])
-            y_poisoned = np.concatenate([y_train.get_data(), pois_examples.Y.get_data()])
+                    # Running attack
+                    _, _, pois_examples, _ = attack.run(cX_val, cy_val)
+                    X_pois = np.vstack([X_train, pois_examples.X.get_data()])
+                    y_pois = np.concatenate([y_train, pois_examples.Y.get_data()])
+                # Save poisoned data
+                to_csv(X_pois, y_pois, cols, path_poison_data)
 
             clf_pois = CClassifierSVM(C=best_params['C'], kernel=CKernelRBF(gamma=best_params['gamma']))
-            clf_pois.fit(X_poisoned, y_poisoned)
+            clf_pois.fit(X_pois, y_pois)
 
-            pred_pois = clf_pois.predict(X_poisoned, y_poisoned)
+            pred_pois = clf_pois.predict(X_pois, y_pois)
             pred_test = clf_pois.predict(X_test, y_test)
-            acc_train_pois = np.mean(pred_pois.get_data() == y_poisoned)
-            acc_test_pois = np.mean(pred_test.get_data() == y_test.get_data())
+            acc_train_pois = np.mean(pred_pois.get_data() == y_pois)
+            acc_test_pois = np.mean(pred_test.get_data() == y_test)
+        except Exception as e:
+            print(e)
+            acc_train_pois = 0
+            acc_test_pois = 0
         time_elapse = time.time() - time_start
         print('Time: [{}] P-Rate {:.2f} Acc  P-train: {:.2f} C-test: {:.2f}'.format(
             time2str(time_elapse), p * 100, acc_train_pois * 100, acc_test_pois * 100))
 
-        # Save poisoned data
-        path_poison_data = os.path.join(path_data, 'poison_svm', f'{dataname}_poison_svm_{p:.2f}.csv')
-        to_csv(X_poisoned, y_poisoned, cols, path_poison_data)
 
         # Prepare score DataFrame
         path_poison_data_list.append(path_poison_data)
@@ -173,11 +182,11 @@ def run_poison_attack(path_train, path_test, dataname, advx_range, path_data, pa
 
 if __name__ == '__main__':
     # Example:
-    # python ./experiments/synth/Step2_ALFA_SVM.py -f "data/synth"
+    # python ./experiments/real/Step2_SecMLPoisoningSVM.py -f "data/real" -o "results/real" -d "breastcancer_std"
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filepath', type=str, required=True,
                         help='The path of the data')
-    parser.add_argument('-d', '--dataset', sype=str, required=True,
+    parser.add_argument('-d', '--dataset', type=str, required=True,
                         help='Dataset name')
     parser.add_argument('-o', '--output', type=str, default='results/real',
                         help='The output path for scores.')
@@ -197,7 +206,7 @@ if __name__ == '__main__':
     print('Path:', filepath)
     print('Range:', advx_range)
 
-    path_train = os.path.join(filepath, 'train', f'{dataset}_clean_train.csv')
-    path_test = os.path.join(filepath, 'test', f'{dataset}_clean_test.csv')
+    path_train = os.path.join(filepath, 'train', f'{dataset}_train.csv')
+    path_test = os.path.join(filepath, 'test', f'{dataset}_test.csv')
 
     run_poison_attack(path_train, path_test, dataset, advx_range, filepath, output)
