@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from sklearn.datasets import make_classification
 from sklearn.model_selection import ParameterGrid
-from sklearn.preprocessing import Normalizer
+from sklearn.preprocessing import StandardScaler
 from tqdm import tqdm
 
 N_SAMPLES = np.arange(1000, 2001, 200)
@@ -23,8 +23,8 @@ NOISE_RATES = np.arange(0, 0.41, 0.05)
 
 def gen_synth_data(data_path, param, bins):
     X, y = make_classification(**param)
-    normalizer = Normalizer().fit(X)
-    X = normalizer.transform(X)
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
     feature_names = ['x' + str(i) for i in range(1, X.shape[1] + 1)]
 
     # To dataframe

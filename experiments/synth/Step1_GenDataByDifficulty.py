@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from sklearn.datasets import make_classification
 from sklearn.model_selection import ParameterGrid, train_test_split
-from sklearn.preprocessing import Normalizer
+from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
 N_SAMPLES = np.arange(1000, 2001, 200)
@@ -28,8 +28,8 @@ def save_data(df, file_name, data_path, difficulty, postfix):
 
 def gen_synth_data(data_path, param, bins):
     X, y = make_classification(**param)
-    normalizer = Normalizer().fit(X)
-    X = normalizer.transform(X)
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
     feature_names = ['x' + str(i) for i in range(1, X.shape[1] + 1)]
 
     # To dataframe
