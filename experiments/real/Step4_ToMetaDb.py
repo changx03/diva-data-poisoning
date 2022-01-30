@@ -70,7 +70,7 @@ def create_database(path_cm, path_score, postfix, path_output):
     # assert df_cm.shape[0] == df_score.shape[0], f'{df_cm.shape[0]} != {df_score.shape[0]}'
 
     df_score['Data.Base'] = df_score['Data']
-    df_score['Data'] = df_score['Path.Poison'].apply(lambda x: x.split('/')[-1])
+    df_score['Data'] = df_score['Path.Poison'].apply(lambda x: os.path.basename(x))
     df_score = df_score.set_index('Data')
 
     # Merge two DataFrames
