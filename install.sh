@@ -14,5 +14,7 @@ pip install torch==1.10.1+cu113 torchvision==0.11.2+cu113 torchaudio==0.10.1+cu1
 pip install secml
 pip install -r ./requirements.txt
 pip install --upgrade .
+python ./demo/cuda_test.py
 python ./demo/check_packages.py
+Rscript ./demo/check_packages.R
 exit 0
