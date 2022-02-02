@@ -2,9 +2,9 @@
 
 cp ./results_plot/flfa_acc.pdf ../overleaf_cmeasures/images/
 cp ./results_plot/synth_corr.pdf ../overleaf_cmeasures/images/
+cp ./results_plot/australian_std_line.pdf ../overleaf_cmeasures/images/
+cp ./results_plot/texture_subset_std_line.pdf ../overleaf_cmeasures/images/
 
-# cp ./results/abalone_falfa_line.pdf ../overleaf_cmeasures/images/
-# cp ./results/texture_falfa_line.pdf ../overleaf_cmeasures/images/
 # cp ./results/roc_real_repeated.pdf ../overleaf_cmeasures/images/
 # cp ./results/roc_synth.pdf ../overleaf_cmeasures/images/
 # cp ./results/fake_acc.pdf ../overleaf_cmeasures/images/
