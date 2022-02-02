@@ -7,6 +7,7 @@ ipython -c "%run plot_real_acc.ipynb"
 ipython -c "%run plot_real_line.ipynb"
 ipython -c "%run plot_real_roc_repeat.ipynb"
 ipython -c "%run plot_synth_roc.ipynb"
+ipython -c "%run plot_roc.ipynb"
 ipython -c "%run plot_theoretical_acc.ipynb"
 
 echo "#########################################################################"
@@ -16,8 +17,7 @@ cp ./results_plot/flfa_acc.pdf ../overleaf_cmeasures/images/
 cp ./results_plot/synth_corr.pdf ../overleaf_cmeasures/images/
 cp ./results_plot/australian_std_line.pdf ../overleaf_cmeasures/images/
 cp ./results_plot/texture_subset_std_line.pdf ../overleaf_cmeasures/images/
-cp ./results_plot/roc_real_repeated.pdf ../overleaf_cmeasures/images/
-cp ./results_plot/roc_synth.pdf ../overleaf_cmeasures/images/
+cp ./results_plot/roc.pdf ../overleaf_cmeasures/images/
 cp ./results_plot/fake_acc.pdf ../overleaf_cmeasures/images/
 
 # cp ./results/synth_heatmap_up3.svg ../overleaf_cmeasures/images/
