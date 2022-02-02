@@ -95,7 +95,7 @@ def run_random_flipping(path_train, path_test, dataname, advx_range, path_data, 
         'Test.Poison': accuracy_test_poison,
     }
     df_ = pd.DataFrame(data)
-    df = pd.concat([df, df_])
+    df = pd.concat([df, df_], ignore_index=True)
     df.to_csv(os.path.join(path_output, f'{dataname}_rand_svm_score.csv'), index=False)
 
 
