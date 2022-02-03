@@ -9,7 +9,7 @@
 # ipython -c "%run plot_synth_roc.ipynb"
 # ipython -c "%run plot_roc.ipynb"
 # ipython -c "%run plot_theoretical_acc.ipynb"
-# ipython -c "%run plot_heatmap.ipynb"
+# ipython -c "%run plot_heatmap_repeat.ipynb"
 # ipython -c "%run plot_heatmap2.ipynb"
 
 # cd ..
