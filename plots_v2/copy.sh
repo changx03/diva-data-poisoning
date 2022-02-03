@@ -17,8 +17,7 @@ echo "#########################################################################"
 echo "Copy plots..."
 cp ./results_plot/flfa_acc.pdf ../overleaf_cmeasures/images/
 cp ./results_plot/synth_corr.pdf ../overleaf_cmeasures/images/
-cp ./results_plot/australian_std_line.pdf ../overleaf_cmeasures/images/
-cp ./results_plot/texture_subset_std_line.pdf ../overleaf_cmeasures/images/
+cp ./results_plot/cm_line.pdf ../overleaf_cmeasures/images/
 cp ./results_plot/roc.pdf ../overleaf_cmeasures/images/
 cp ./results_plot/fake_acc.pdf ../overleaf_cmeasures/images/
 cp ./results_plot/synth_heatmap.pdf ../overleaf_cmeasures/images/
