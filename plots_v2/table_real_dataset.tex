@@ -1,0 +1,42 @@
+\begin{table}
+    \centering
+    \scriptsize
+    \caption{}
+    \begin{tabular}{l|r|r|r|r|r}
+        \hline
+        Dataset         & $m$ & $n$ & PLR  & Train ($\%$) & Test ($\%$) \\ \hline\hline
+        Abalone      & 7  & 1600 & 0.50 &  79.9 &  76.5 \\
+        Australian   & 14 & 552  & 0.45 &  91.5 &  81.9 \\
+        Banknote     & 4  & 1097 & 0.44 & 100.0 & 100.0 \\
+        Breastcancer & 30 & 455  & 0.63 &  99.3 &  95.0 \\
+        CMC          & 9  & 1178 & 0.77 &  79.9 &  77.5 \\
+        HTRU2        & 8  & 1600 & 0.50 &  94.8 &  92.6 \\
+        Phoneme      & 5  & 1600 & 0.50 &  89.7 &  85.6 \\
+        Ringnorm     & 20 & 1600 & 0.50 &  99.4 &  97.8 \\
+        Texture      & 40 & 800  & 0.50 & 100.0 &  99.8 \\
+        Yeast        & 8  & 713  & 0.48 &  73.5 &  65.8 \\ \hline
+    \end{tabular}
+    \label{tab.datasets}
+\end{table}
+
+\begin{table}
+    \centering
+    \scriptsize
+    \caption{}
+    \begin{tabular}{l|r|r|r|r}
+        \hline
+        Dataset/Attack &  Rand &  PoisSVM &  ALFA &  FALFA \\ \hline \hline   
+        Abalone &   1.7 &      1.8 &  20.5 &   17.0 \\
+        Australian &  -0.0 &      7.4 &  28.4 &   20.0 \\
+          Banknote &   2.4 &      2.0 &  21.7 &   21.8 \\
+      Breastcancer &   3.3 &      7.0 &  19.5 &   20.0 \\
+               CMC &   0.5 &     15.3 &  11.1 &   16.3 \\
+             HTRU2 &   1.6 &      1.6 &  19.7 &   21.9 \\
+           Phoneme &   7.8 &      2.5 &  14.1 &   20.4 \\
+          Ringnorm &   0.8 &      3.4 &  26.2 &   20.1 \\
+           Texture &   2.1 &      1.8 &  22.3 &   24.5 \\
+             Yeast &   1.9 &      4.1 &  17.1 &   12.2 \\
+        \hline
+        \end{tabular}
+    \label{tab.err}
+\end{table}
