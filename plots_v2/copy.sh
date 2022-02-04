@@ -15,13 +15,13 @@
 # cd ..
 echo "#########################################################################"
 echo "Copy plots..."
-cp ./results_plot/flfa_acc.pdf ../overleaf_cmeasures/images/
-cp ./results_plot/synth_corr.pdf ../overleaf_cmeasures/images/
 cp ./results_plot/cm_line.pdf ../overleaf_cmeasures/images/
-cp ./results_plot/roc.pdf ../overleaf_cmeasures/images/
 cp ./results_plot/fake_acc.pdf ../overleaf_cmeasures/images/
-cp ./results_plot/synth_heatmap.pdf ../overleaf_cmeasures/images/
-cp ./results_plot/synth_heatmap_noise.pdf ../overleaf_cmeasures/images/
+cp ./results_plot/flfa_acc.pdf ../overleaf_cmeasures/images/
+cp ./results_plot/roc.pdf ../overleaf_cmeasures/images/
+cp ./results_plot/synth_corr.pdf ../overleaf_cmeasures/images/
+cp ./results_plot/synth_heatmap_noise.svg ../overleaf_cmeasures/images/
+cp ./results_plot/synth_heatmap.svg ../overleaf_cmeasures/images/
 
 
 echo "#########################################################################"
