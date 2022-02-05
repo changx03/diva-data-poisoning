@@ -62,27 +62,27 @@
 \end{table}
 
 
-\begin{table}
+\begin{table}[h]
     \footnotesize
     \centering
     \caption{}
-    \begin{tabular}{l|r|r|r|r}
+    \begin{tabular}{l|rr|rr}
         \toprule
-        Dataset/Attack &   SLN &  PoisSVM &  ALFA &  FALFA \\
-        \midrule
-               Abalone & 0.072 &    0.058 & 0.115 &  0.083 \\
-            Australian & 0.072 &    0.065 & 0.115 &  0.110 \\
-              Banknote & 0.126 &    0.175 & 0.089 &  0.145 \\
-          Breastcancer & 0.068 &    0.066 & 0.116 &  0.114 \\
-                   CMC & 0.102 &    0.250 & 0.250 &  0.208 \\
-                 HTRU2 & 0.055 &    0.061 & 0.106 &  0.094 \\
-               Phoneme & 0.087 &    0.067 & 0.085 &  0.094 \\
-              Ringnorm & 0.192 &    0.149 & 0.140 &  0.135 \\
-               Texture & 0.091 &    0.099 & 0.067 &  0.073 \\
-                 Yeast & 0.084 &    0.092 & 0.186 &  0.125 \\
+        Dataset/Attack &   SLN &  FALFA &  PoisSVM &  ALFA \\
+        \midrule                                             
+               Abalone & 0.072 &  0.083 &    0.058 & 0.115 \\
+            Australian & 0.072 &  0.110 &    0.065 & 0.115 \\
+              Banknote & 0.126 &  0.145 &    0.175 & 0.089 \\
+          Breastcancer & 0.068 &  0.114 &    0.066 & 0.116 \\
+                   CMC & 0.102 &  0.208 &    0.250 & 0.250 \\
+                 HTRU2 & 0.055 &  0.094 &    0.061 & 0.106 \\
+               Phoneme & 0.087 &  0.094 &    0.067 & 0.085 \\
+              Ringnorm & 0.192 &  0.135 &    0.149 & 0.140 \\
+               Texture & 0.091 &  0.073 &    0.099 & 0.067 \\
+                 Yeast & 0.084 &  0.125 &    0.092 & 0.186 \\
         \midrule
         \textbf{Mean} & \textbf{0.095} & \textbf{0.108} & \textbf{0.127} & \textbf{0.118} \\
         \bottomrule
         \end{tabular}
     \label{table.real_rmse}
-\end{table}
+    \end{table}
