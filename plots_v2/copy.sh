@@ -3,14 +3,10 @@
 # cd ./plots_v2
 # echo "Generate plots..."
 # ipython -c "%run plot_corr.ipynb"
-# ipython -c "%run plot_real_acc.ipynb"
+# ipython -c "%run plot_fake_acc.ipynb"
+# ipython -c "%run plot_heatmap_3.ipynb"
 # ipython -c "%run plot_real_line.ipynb"
-# ipython -c "%run plot_real_roc_repeat.ipynb"
-# ipython -c "%run plot_synth_roc.ipynb"
 # ipython -c "%run plot_roc.ipynb"
-# ipython -c "%run plot_theoretical_acc.ipynb"
-# ipython -c "%run plot_heatmap_repeat.ipynb"
-# ipython -c "%run plot_heatmap2.ipynb"
 
 # cd ..
 echo "#########################################################################"
@@ -20,7 +16,7 @@ cp ./results_plot/fake_acc.pdf ../overleaf_cmeasures/images/
 cp ./results_plot/flfa_acc.pdf ../overleaf_cmeasures/images/
 cp ./results_plot/roc.pdf ../overleaf_cmeasures/images/
 cp ./results_plot/synth_corr.pdf ../overleaf_cmeasures/images/
-cp ./results_plot/synth_heatmap_combo.svg ../overleaf_cmeasures/images/
+cp ./results_plot/synth_heatmap.svg ../overleaf_cmeasures/images/
 
 
 echo "#########################################################################"
