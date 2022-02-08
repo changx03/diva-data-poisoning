@@ -15,74 +15,83 @@
     \label{table.y}
 \end{table}
 
-\begin{table}
+
+\begin{table}[t!]
     \footnotesize
     \centering
-    \caption{}
+    \caption{Summary of datasets includes the number of features ($m$), the training set size ($n$), the Positive Label Rate (PLR) and the average accuracy for train and test sets across all classifiers on the same dataset.}
     \begin{tabular}{l|r|r|r|r|r}
         \toprule
         Dataset         & $m$ & $n$ & PLR  & Train ($\%$) & Test ($\%$) \\
         \midrule
-        Abalone      & 7  & 1600 & 0.50 &  79.9 &  76.5 \\
-        Australian   & 14 & 552  & 0.45 &  91.5 &  81.9 \\
-        Banknote     & 4  & 1097 & 0.44 & 100.0 & 100.0 \\
-        Breastcancer & 30 & 455  & 0.63 &  99.3 &  95.0 \\
-        CMC          & 9  & 1178 & 0.77 &  79.9 &  77.5 \\
-        HTRU2        & 8  & 1600 & 0.50 &  94.8 &  92.6 \\
-        Phoneme      & 5  & 1600 & 0.50 &  89.7 &  85.6 \\
-        Ringnorm     & 20 & 1600 & 0.50 &  99.4 &  97.8 \\
-        Texture      & 40 & 800  & 0.50 & 100.0 &  99.8 \\
-        Yeast        & 8  & 713  & 0.48 &  73.5 &  65.8 \\
+        Abalone      & 7  & 1600 & 0.50 & $79.9\pm0.7$ &  $76.5\pm0.5$ \\
+        Australian   & 14 & 552  & 0.45 & $91.5\pm3.1$ &  $81.9\pm2.1$ \\
+        Banknote     & 4  & 1097 & 0.44 & $100.0\pm0.0$ & $100.0\pm0.0$ \\
+        Breastcancer & 30 & 455  & 0.63 & $99.3\pm0.2$ &  $95.0\pm2.5$ \\
+        CMC          & 9  & 1178 & 0.77 & $79.9\pm2.8$ &  $77.5\pm0.6$ \\
+        HTRU2        & 8  & 1600 & 0.50 & $94.8\pm0.5$ &  $92.6\pm0.9$ \\
+        Phoneme      & 5  & 1600 & 0.50 & $89.7\pm6.3$ &  $85.6\pm1.3$ \\
+        Ringnorm     & 20 & 1600 & 0.50 & $99.4\pm0.4$ &  $97.8\pm1.1$ \\
+        Texture      & 40 & 800  & 0.50 & $100.0\pm0.0$ &  $99.8\pm0.5$ \\
+        Yeast        & 8  & 713  & 0.48 & $73.5\pm4.7$ &  $65.8\pm1.6$ \\
         \bottomrule
     \end{tabular}
     \label{tab.datasets}
 \end{table}
 
+
 \begin{table}
     \footnotesize
     \centering
-    \caption{}
+    \caption{
+        Performance loss (\%) after attacked by a poisoning attack with 30\% poisoning rate. 
+        This is the test accuracy difference before and after the attack. 
+        If we consider 10\% performance loss is significant at 30\% poisoning rate, then 1 on SLN and 2 classifier on PoisSVM have significant degradation. 
+        Meanwhile, all classifiers attacked by ALFA and FALFA have significant degradation.
+    }
     \begin{tabular}{l|r|r|r|r}
-    \toprule
-        Dataset/Attack &  SLN &  PoisSVM &  ALFA &  FALFA \\
+        \toprule
+        Dataset &         Rand &      PoisSVM &          ALFA &         FALFA \\
     \midrule
-        Abalone    &   1.7 &      1.8          &  \textbf{20.5} &   \textbf{17.0} \\
-        Australian &  -0.0 &      7.4          &  \textbf{28.4} &   \textbf{20.0} \\
-          Banknote &   2.4 &      2.0          &  \textbf{21.7} &   \textbf{21.8} \\
-      Breastcancer &   3.3 &      7.0          &  \textbf{19.5} &   \textbf{20.0} \\
-               CMC &   0.5 &     \textbf{15.3} &  \textbf{11.1} &   \textbf{16.3} \\
-             HTRU2 &   1.6 &      1.6          &  \textbf{19.7} &   \textbf{21.9} \\
-           Phoneme &   7.8 &      2.5          &  \textbf{14.1} &   \textbf{20.4} \\
-          Ringnorm &   0.8 &      3.4          &  \textbf{26.2} &   \textbf{20.1} \\
-           Texture &   2.1 &      1.8          &  \textbf{22.3} &   \textbf{24.5} \\
-             Yeast &   1.9 &      4.1          &  \textbf{17.1} &   \textbf{12.2} \\
+        Abalone &  $1.9\pm1.9$ &  $3.1\pm1.7$ &  $\bm{28.8\pm2.6}$ &  $\bm{22.5\pm3.7}$ \\
+        Australian &  $2.9\pm2.9$ & $\bm{12.8\pm7.7}$ & $\bm{37.5\pm13.1}$ & $\bm{31.6\pm10.9}$ \\
+        Banknote &  $6.9\pm6.1$ &  $3.6\pm1.8$ &  $\bm{30.5\pm4.3}$ &  $\bm{33.5\pm4.6}$ \\
+    Breastcancer &  $8.6\pm4.2$ &  $9.6\pm4.8$ &  $\bm{30.0\pm7.5}$ &  $\bm{31.6\pm2.8}$ \\
+            CMC &  $0.9\pm1.7$ & $\bm{18.0\pm5.2}$ & $\bm{28.9\pm14.8}$ &  $\bm{20.7\pm3.5}$ \\
+            HTRU2 &  $2.4\pm0.6$ &  $2.5\pm1.2$ &  $\bm{31.0\pm3.3}$ &  $\bm{30.8\pm3.6}$ \\
+        Phoneme & $\bm{15.0\pm4.4}$ &  $4.7\pm1.4$ &  $\bm{24.0\pm2.5}$ &  $\bm{28.8\pm1.4}$ \\
+        Ringnorm &  $5.9\pm6.9$ &  $5.0\pm1.1$ &  $\bm{44.1\pm3.8}$ &  $\bm{32.7\pm1.9}$ \\
+        Texture &  $4.5\pm8.0$ &  $3.0\pm1.9$ &  $\bm{35.1\pm3.0}$ &  $\bm{34.7\pm2.1}$ \\
+            Yeast &  $3.2\pm4.3$ &  $6.6\pm7.3$ &  $\bm{19.7\pm3.7}$ &  $\bm{13.6\pm2.6}$ \\
     \bottomrule
     \end{tabular}
     \label{tab.err}
 \end{table}
 
 
-\begin{table}[h]
+\begin{table}[t!]
     \footnotesize
     \centering
-    \caption{}
+    \caption{Root Mean Square Error (RMSE) of DIVA estimates clean test accuracy when trained on FALFA and SLN. 
+    The prediction with smallest error in the same dataset is highlighted.
+    The RMSEs on unknown attacks (PoisSVM, ALFA) are comparable to known attacks (SLN, FALFA), but with higher SDs.}
     \begin{tabular}{l|rr|rr}
         \toprule
-        Dataset/Attack &   SLN &  FALFA &  PoisSVM &  ALFA \\
+        Dataset &   SLN &  FALFA &  PoisSVM &  ALFA \\
         \midrule                                             
-               Abalone & 0.072 &  0.083 &    0.058 & 0.115 \\
-            Australian & 0.072 &  0.110 &    0.065 & 0.115 \\
-              Banknote & 0.126 &  0.145 &    0.175 & 0.089 \\
-          Breastcancer & 0.068 &  0.114 &    0.066 & 0.116 \\
-                   CMC & 0.102 &  0.208 &    0.250 & 0.250 \\
-                 HTRU2 & 0.055 &  0.094 &    0.061 & 0.106 \\
-               Phoneme & 0.087 &  0.094 &    0.067 & 0.085 \\
-              Ringnorm & 0.192 &  0.135 &    0.149 & 0.140 \\
-               Texture & 0.091 &  0.073 &    0.099 & 0.067 \\
-                 Yeast & 0.084 &  0.125 &    0.092 & 0.186 \\
+            Abalone        & 0.072      &  0.083      &    \textbf{0.058} & 0.115 \\
+            Australian     & 0.072      &  0.110      &    \textbf{0.065} & 0.115 \\
+            Banknote       & 0.126      &  0.145      &    0.175 & \textbf{0.089} \\
+            Breastcancer   & 0.068      &  0.114      &    \textbf{0.066} & 0.116 \\
+            CMC            & \textbf{0.102}      &  0.208      &    0.250 & 0.250 \\
+            HTRU2          & \textbf{0.055}      &  0.094      &    0.061 & 0.106 \\
+            Phoneme        & 0.087      &  0.094      &    \textbf{0.067} & 0.085 \\
+            Ringnorm       & 0.192      &  \textbf{0.135}      &    0.149 & 0.140 \\
+            Texture        & 0.091      &  0.073      &    0.099 & \textbf{0.067} \\
+            Yeast          & \textbf{0.084}    &  0.125        &    0.092 & 0.186 \\
         \midrule
-        \textbf{Mean} & \textbf{0.095} & \textbf{0.108} & \textbf{0.127} & \textbf{0.118} \\
+        \textbf{Mean} & $\bm{0.095\pm0.039}$ & $\bm{0.108\pm0.039}$ & $\bm{0.127\pm0.064}$ & $\bm{0.118\pm0.054}$ \\
         \bottomrule
         \end{tabular}
     \label{table.real_rmse}
-    \end{table}
+\end{table}
