@@ -19,21 +19,21 @@
 \begin{table}[t!]
     \footnotesize
     \centering
-    \caption{Summary of datasets includes the number of features ($m$), the training set size ($n$), the Positive Label Rate (PLR) and the average accuracy for train and test sets across all classifiers on the same dataset.}
+    \caption{Summary of the datasets' training set size ($n$), number of features ($m$), Positive Label Rate (PLR) and the average accuracy (\%) for train and test sets across all classifiers on the same dataset.}
     \begin{tabular}{l|r|r|r|r|r}
         \toprule
-        Dataset         & $m$ & $n$ & PLR  & Train ($\%$) & Test ($\%$) \\
+        Dataset      & $n$  & $m$ & PLR  & Train & Test \\
         \midrule
-        Abalone      & 7  & 1600 & 0.50 & $79.9\pm0.7$ &  $76.5\pm0.5$ \\
-        Australian   & 14 & 552  & 0.45 & $91.5\pm3.1$ &  $81.9\pm2.1$ \\
-        Banknote     & 4  & 1097 & 0.44 & $100.0\pm0.0$ & $100.0\pm0.0$ \\
-        Breastcancer & 30 & 455  & 0.63 & $99.3\pm0.2$ &  $95.0\pm2.5$ \\
-        CMC          & 9  & 1178 & 0.77 & $79.9\pm2.8$ &  $77.5\pm0.6$ \\
-        HTRU2        & 8  & 1600 & 0.50 & $94.8\pm0.5$ &  $92.6\pm0.9$ \\
-        Phoneme      & 5  & 1600 & 0.50 & $89.7\pm6.3$ &  $85.6\pm1.3$ \\
-        Ringnorm     & 20 & 1600 & 0.50 & $99.4\pm0.4$ &  $97.8\pm1.1$ \\
-        Texture      & 40 & 800  & 0.50 & $100.0\pm0.0$ &  $99.8\pm0.5$ \\
-        Yeast        & 8  & 713  & 0.48 & $73.5\pm4.7$ &  $65.8\pm1.6$ \\
+        Abalone      & 1600 & 7   & 0.50 & $79.9\pm0.7$ &  $76.5\pm0.5$ \\
+        Australian   & 552  & 14  & 0.45 & $91.5\pm3.1$ &  $81.9\pm2.1$ \\
+        Banknote     & 1097 & 4   & 0.44 & $100.0\pm0.0$ & $100.0\pm0.0$ \\
+        Breastcancer & 455  & 30  & 0.63 & $99.3\pm0.2$ &  $95.0\pm2.5$ \\
+        CMC          & 1178 & 9   & 0.77 & $79.9\pm2.8$ &  $77.5\pm0.6$ \\
+        HTRU2        & 1600 & 8   & 0.50 & $94.8\pm0.5$ &  $92.6\pm0.9$ \\
+        Phoneme      & 1600 & 5   & 0.50 & $89.7\pm6.3$ &  $85.6\pm1.3$ \\
+        Ringnorm     & 1600 & 20  & 0.50 & $99.4\pm0.4$ &  $97.8\pm1.1$ \\
+        Texture      & 800  & 40  & 0.50 & $100.0\pm0.0$ &  $99.8\pm0.5$ \\
+        Yeast        & 713  & 8   & 0.48 & $73.5\pm4.7$ &  $65.8\pm1.6$ \\
         \bottomrule
     \end{tabular}
     \label{tab.datasets}
@@ -94,4 +94,71 @@
         \bottomrule
         \end{tabular}
     \label{table.real_rmse}
+\end{table}
+
+
+\begin{tabular}{lllll}
+    \toprule
+         Dataset &         Rand &      PoisSVM &         ALFA &        FALFA \\
+    \midrule
+         Abalone &  $0.8\pm0.7$ &  $1.8\pm0.8$ &  $9.5\pm1.9$ &  $7.7\pm1.7$ \\
+      Australian &  $0.7\pm0.5$ &  $4.5\pm3.9$ &  $4.9\pm4.0$ &  $8.3\pm3.8$ \\
+        Banknote &  $1.4\pm2.3$ &  $1.1\pm1.1$ & $10.9\pm2.5$ & $10.3\pm2.9$ \\
+    Breastcancer &  $2.5\pm0.7$ &  $5.3\pm4.6$ &  $7.2\pm2.0$ &  $9.1\pm2.7$ \\
+             CMC & $-0.2\pm0.7$ & $15.1\pm4.7$ &  $3.5\pm3.0$ &  $5.7\pm3.3$ \\
+           HTRU2 &  $0.7\pm0.3$ &  $0.7\pm1.3$ &  $9.2\pm3.1$ &  $9.4\pm2.4$ \\
+         Phoneme &  $3.5\pm2.9$ &  $0.9\pm2.1$ &  $6.8\pm0.7$ & $11.6\pm2.1$ \\
+        Ringnorm &  $0.1\pm0.3$ &  $1.7\pm0.5$ &  $3.2\pm2.5$ &  $6.4\pm2.9$ \\
+         Texture &  $0.5\pm1.1$ &  $1.2\pm0.8$ &  $7.9\pm4.6$ &  $4.9\pm3.9$ \\
+           Yeast & $-0.2\pm1.6$ &  $1.9\pm3.8$ & $10.4\pm4.9$ &  $2.3\pm4.6$ \\
+    \bottomrule
+\end{tabular}
+
+
+\begin{table}
+    \footnotesize
+    \centering
+    \caption{}
+    \begin{tabular}{l|r|r|r|r}
+        \toprule
+             Dataset &         Rand &      PoisSVM &         ALFA &        FALFA \\
+        \midrule
+             Abalone &  $0.8\pm0.7$ &  $1.8\pm0.8$ &  $9.5\pm1.9$ &  $7.7\pm1.7$ \\
+          Australian &  $0.7\pm0.5$ &  $4.5\pm3.9$ &  $4.9\pm4.0$ &  $8.3\pm3.8$ \\
+            Banknote &  $1.4\pm2.3$ &  $1.1\pm1.1$ & $10.9\pm2.5$ & $10.3\pm2.9$ \\
+        Breastcancer &  $2.5\pm0.7$ &  $5.3\pm4.6$ &  $7.2\pm2.0$ &  $9.1\pm2.7$ \\
+                 CMC & $-0.2\pm0.7$ & $15.1\pm4.7$ &  $3.5\pm3.0$ &  $5.7\pm3.3$ \\
+               HTRU2 &  $0.7\pm0.3$ &  $0.7\pm1.3$ &  $9.2\pm3.1$ &  $9.4\pm2.4$ \\
+             Phoneme &  $3.5\pm2.9$ &  $0.9\pm2.1$ &  $6.8\pm0.7$ & $11.6\pm2.1$ \\
+            Ringnorm &  $0.1\pm0.3$ &  $1.7\pm0.5$ &  $3.2\pm2.5$ &  $6.4\pm2.9$ \\
+             Texture &  $0.5\pm1.1$ &  $1.2\pm0.8$ &  $7.9\pm4.6$ &  $4.9\pm3.9$ \\
+               Yeast & $-0.2\pm1.6$ &  $1.9\pm3.8$ & $10.4\pm4.9$ &  $2.3\pm4.6$ \\
+        \bottomrule
+    \end{tabular}
+    \label{}
+\end{table}
+
+
+\begin{table}[t!]
+    \footnotesize
+    \centering
+    \caption{Summary of the datasets' training set size ($n$), number of features ($m$), Positive Label Rate (PLR), the average accuracy (\%) for train and test sets across all classifiers on the same dataset, and their difficulty (\underline{E}asy/\underline{N}ormal/\underline{H}ard). 
+    }
+    \begin{tabular}{l|r|r|r|r|r|c}
+        \toprule
+        Dataset      & $n$  & $m$ & PLR  & Train Acc. & Test Acc. & Diff. \\
+        \midrule                                                                 
+        Abalone      & 1600 & 7   & 0.50 & $79.9\pm0.7$ &  $76.5\pm0.5$     & N \\
+        Australian   & 552  & 14  & 0.45 & $91.5\pm3.1$ &  $81.9\pm2.1$     & N \\
+        Banknote     & 1097 & 4   & 0.44 & $100.0\pm0.0$ & $100.0\pm0.0$    & E \\
+        Breastcancer & 455  & 30  & 0.63 & $99.3\pm0.2$ &  $95.0\pm2.5$     & E \\
+        CMC          & 1178 & 9   & 0.77 & $79.9\pm2.8$ &  $77.5\pm0.6$     & N \\
+        HTRU2        & 1600 & 8   & 0.50 & $94.8\pm0.5$ &  $92.6\pm0.9$     & E \\
+        Phoneme      & 1600 & 5   & 0.50 & $89.7\pm6.3$ &  $85.6\pm1.3$     & N \\
+        Ringnorm     & 1600 & 20  & 0.50 & $99.4\pm0.4$ &  $97.8\pm1.1$     & E \\
+        Texture      & 800  & 40  & 0.50 & $100.0\pm0.0$ &  $99.8\pm0.5$    & E \\
+        Yeast        & 713  & 8   & 0.48 & $73.5\pm4.7$ &  $65.8\pm1.6$     & H \\
+        \bottomrule
+    \end{tabular}
+    \label{tab.datasets}
 \end{table}
