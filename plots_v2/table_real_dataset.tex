@@ -162,3 +162,44 @@
     \end{tabular}
     \label{tab.datasets}
 \end{table}
+
+
+\begin{table}[t!]
+    \footnotesize
+    \centering
+    \caption{List of measures in C-Measures. If possible, Standard Deviations (SDs) of measures are also included, but are not listed.}
+    \begin{tabular}{l|c|p{5cm}}
+    \toprule
+    Category & Acronym & Description \\ 
+    \midrule
+    \multirow{5}{*}{Feature-based}   & F1     & Maximum Fisher’s discriminant ratio                        \\
+                                     & F1v     & Directional-vector maximum Fisher’s discriminant ratio    \\
+                                     & F2     & Volume of overlapping region                               \\
+                                     & F3     & Maximum individual feature efficiency                      \\
+                                     & F4     & Collective feature efficiency                              \\ 
+    \midrule
+    \multirow{3}{*}{Linearity}       & L1     & Sum of the error distance by linear programming            \\
+                                     & L2     & Error rate of the linear SVM classifier                    \\
+                                     & L3     & Non-linearity of the linear SVM classifier                 \\
+    \midrule
+    \multirow{6}{*}{Neighborhood}    & N1     & Fraction of borderline points                              \\
+                                     & N2     & Ratio of intra/extra class nearest-neighbors distance      \\
+                                     & N3     & Error rate of nearest-neighbors classifier                 \\
+                                     & N4     & Non-linearity of nearest-neighbors classifier              \\
+                                     & T1     & Fraction of hyperspheres covering data                     \\
+                                     & LSC     & Local Set average Cardinality                             \\
+    \midrule
+    \multirow{3}{*}{Network}         & Density     & Average density of the network                        \\
+                                     & ClsCoef     & Clustering Coefficient                                \\
+                                     & Hubs     & Hub score -- Number of connections each node has         \\
+    \midrule
+    \multirow{3}{*}{Dimensionality}  & T2     & Average number of features per dimension                   \\
+                                     & T3     & Average number of PCA dimensions per points                \\
+                                     & T4     & Ratio of the PCA dimension to the original dimension       \\
+    \midrule
+    \multirow{2}{*}{Class Imbalance} & C1     & Entropy of classes proportions                             \\
+                                     & C2     & Imbalance ratio                                            \\ 
+    \bottomrule
+    \end{tabular}
+    \label{tab.cmeasure}
+\end{table}
