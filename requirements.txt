@@ -59,7 +59,6 @@ pathspec==0.9.0
 pexpect==4.8.0
 pickleshare==0.7.5
 Pillow==9.0.0
-pip==21.3.1
 pkg_resources==0.0.0
 platformdirs==2.4.1
 prettytable==3.0.0
@@ -80,7 +79,6 @@ scipy==1.7.3
 seaborn==0.11.2
 secml==0.15
 Send2Trash==1.8.0
-setuptools==44.0.0
 six==1.16.0
 sniffio==1.2.0
 terminado==0.12.1
@@ -88,9 +86,6 @@ testpath==0.5.0
 threadpoolctl==3.0.0
 toml==0.10.2
 tomli==1.2.3
-torch==1.10.1+cu113
-torchaudio==0.10.1+cu113
-torchvision==0.11.2+cu113
 tornado==6.1
 tqdm==4.62.3
 traitlets==5.1.1
@@ -99,5 +94,4 @@ urllib3==1.26.7
 wcwidth==0.2.5
 webencodings==0.5.1
 websocket-client==1.2.3
-wheel==0.37.1
 zipp==3.7.0
