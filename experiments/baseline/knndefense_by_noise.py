@@ -1,5 +1,4 @@
-"""Run kNN-based defense on synthetic datasets grouped by difficulties (Based 
-on test set accuracy);
+"""Run kNN-based defense on synthetic datasets grouped by noise rate;
 """
 import argparse
 import os
@@ -17,11 +16,17 @@ ROOT = Path(os.getcwd())
 
 def run_defense(metadata, path_output):
     df = metadata
+    # df = metadata.iloc[:50].copy()  # Testing to top 50 datasets
+
+    # Get noise rate
+    noise_rate = df['Data'].apply(lambda x: float(x.split('_')[6][2:])).to_numpy()
+    df['Noise.Rate'] = noise_rate
+
     with open(path_output, 'a+') as file:
-        file.write(','.join(['Path.Poison', 'Difficulty', 'Rate', 'Similarity']) + '\n')
+        file.write(','.join(['Path.Poison', 'Noise', 'Rate', 'Similarity']) + '\n')
         for i in tqdm(range(df.shape[0])):
             row = df.iloc[i]
-            difficulty = row['Data'].split('_')[0]
+            noise = row['Noise.Rate']
             path_poison = row['Path.Poison']
             rate = row['Rate']
 
@@ -34,14 +39,14 @@ def run_defense(metadata, path_output):
             assert np.array_equal(X, X_sanitized)
             similarity = defense.eval(y, y_sanitized)
 
-            row_output = ','.join([path_poison, difficulty, f'{rate:.2f}', f'{similarity:.4f}'])
+            row_output = ','.join([path_poison, f'{noise:.2f}', f'{rate:.2f}', f'{similarity:.4f}'])
             file.write(row_output + '\n')
 
 
 if __name__ == '__main__':
     """Example:
-    python ./experiments/baseline/knndefense_by_difficulty.py -i "./results/synth/synth_alfa_svm_score.csv" -o "./results/synth/baseline/synth_alfa_svm_knndefense.csv"
-    python ./experiments/baseline/knndefense_by_difficulty.py -i "./results/synth/synth_falfa_nn_score.csv" -o "./results/synth/baseline/synth_falfa_nn_knndefense.csv"
+    python ./experiments/baseline/knndefense_by_noise.py -i "./results/synth_noisy/synth_alfa_svm_score.csv" -o "./results/synth_noisy/baseline/synth_alfa_svm_knndefense.csv"
+    python ./experiments/baseline/knndefense_by_noise.py -i "./results/synth_noisy/synth_falfa_nn_score.csv" -o "./results/synth_noisy/baseline/synth_falfa_nn_knndefense.csv"
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--input', type=str, required=True,
@@ -55,8 +60,8 @@ if __name__ == '__main__':
     print('Root:', ROOT)
 
     # For testing only
-    # path_input = Path(os.path.join(ROOT, 'results', 'synth', 'synth_alfa_svm_score.csv'))
-    # path_output = Path(os.path.join(ROOT, 'results', 'synth', 'baseline', 'synth_alfa_svm_knndefense.csv'))
+    # path_input = Path(os.path.join(ROOT, 'results', 'synth_noisy', 'synth_alfa_svm_score.csv'))
+    # path_output = Path(os.path.join(ROOT, 'results', 'synth_noisy', 'baseline', 'synth_alfa_svm_knndefense.csv'))
 
     create_dir(path_output.parent)
 
