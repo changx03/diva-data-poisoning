@@ -51,7 +51,7 @@ class KNNBasedDefense:
         assert len(X_train) == len(y_train), \
             'X_train and y_train should have same length.'
 
-        n = X.shape[0]
+        n = X_train.shape[0]
         tree = neighbors.KDTree(X_train)
         _, indices = tree.query(X_train, k=self.k + 1)
         # The 1st index is X itself, so exclude it.
