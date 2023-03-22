@@ -1,4 +1,4 @@
-# Adversarial Label Flipping Attack (ALFA) and Detect Using Complex Measures
+# Poison is not Traceless: Black-Box Detection of Poisoning Attacks
 
 ## Abstract
 
@@ -7,7 +7,7 @@ However, clean data is often absent when the validation and training sets come f
 
 ## DIVA (Detecting InVisible Attacks)
 
- We propose DIVA (Detecting InVisible Attacks), a novel framework that detects poisoning attacks by comparing the discrepancy between the classifier's theoretical accuracy and the empirical accuracy on the given training data.
+We propose DIVA (Detecting InVisible Attacks), a novel framework that detects poisoning attacks by comparing the discrepancy between the classifier's theoretical accuracy and the empirical accuracy on the given training data.
 
 <img src="diva01.png" alt="DIVA at prediction time" width="600"/>
 
@@ -53,7 +53,7 @@ The script for manually install all packages is the following:
 
 ```bash
 # Create virtual environment
-python3.9 -m venv venv
+python3.8 -m venv venv
 source ./venv/bin/activate
 
 # Upgrade pip
@@ -68,8 +68,8 @@ pip install secml
 # Install from requirements.txt
 pip install -r requirements.txt
 
-# Install local package
-pip install .
+# Install local package in editable mode
+pip install -e .
 ```
 
 ## Run experiments
