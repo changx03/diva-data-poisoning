@@ -1,9 +1,12 @@
-# Poison is not Traceless: Black-Box Detection of Poisoning Attacks
+# Poison is Not Traceless: Fully-Agnostic Detection of Poisoning Attacks
 
 ## Abstract
 
-Machine learning has proven to be a powerful tool, but its performance depends on the quality of the underlying data. Malicious actors can attack the model by poisoning the training data. One such attack, the label poisoning attack, aims to degrade prediction performance by injecting misleading labels. Previous defenses against such attacks assume that a clean validation set is available. However, clean data is often absent when the validation and training sets come from the same source. Without knowing the ground truth, current approaches cannot determine whether a dataset is poisoned or not. This paper presents a novel framework, \diva (Detecting InVisible Attacks), which determines if a data set has been poisoned, even when a clean validation set is not available. Based on the idea that label poisoning attacks can be detected by comparing the classifier's accuracy between poisoned and clean data, we extract Complexity Measures from the data and use them to train a meta-estimator to predict the classifier's theoretical accuracy on untampered data.
-To efficiently generate metadata, we introduce a novel fast poisoning attack, FALFA (Fast Adversarial Label Flipping Attack). Our experiments confirm that \diva can detect unknown attacks when presented with only poisoned data, even against strong adversaries where as much as 40\% of the training data is corrupted.
+The performance of machine learning models depends on the quality of the underlying data. Malicious actors can attack the model by poisoning the training data. Current detectors are tied to either specific data types, models, or attacks, and therefore have limited applicability in real-world scenarios. This paper presents a novel fully-agnostic framework, DIVA (Detecting InVisible Attacks), that detects attacks solely relying on analyzing the potentially poisoned data set. DIVA is based on the idea that poisoning attacks can be detected by comparing the classifier's accuracy on poisoned and clean data and pre-trains a meta-learner using Complexity Measures to estimate the otherwise unknown accuracy on a hypothetical clean dataset. The framework applies to generic poisoning attacks. For evaluation purposes, in this paper, we test DIVA on label-flipping attacks.
+
+## Supplementary material
+
+The supplementary material is available [here](./SupplementaryMaterial.pdf).
 
 ## DIVA (Detecting InVisible Attacks)
 
@@ -17,10 +20,6 @@ A dataset is flagged as poisoned if the discrepancy exceeds a certain threshold.
 <img src="diva_full.svg" alt="DIVA framework" width="600"/>
 
 DIVA constructs a meta-database by extracting C-Measures from generated datasets $G^{(i)}$. By generating multiple poisoned datasets $G^{(i)}_{\text{tr;}p_j}$ with poisoned classifiers $g^{(i)}_{p_j}$ from the training split $G^{(i)}_{\text{tr;clean}}$, the meta-dataset collects multiple C-Measures and accuracy pairs for each $G^{(i)}$.
-
-## Supplementary material
-
-The supplementary material is available [here](./SupplementaryMaterial.pdf).
 
 ## Install dependencies
 
