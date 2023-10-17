@@ -12,14 +12,19 @@ The supplementary material is available [here](./SupplementaryMaterial.pdf).
 
 We propose DIVA (Detecting InVisible Attacks), a novel framework that detects poisoning attacks by comparing the discrepancy between the classifier's theoretical accuracy and the empirical accuracy on the given training data.
 
-<img src="diva01.png" alt="DIVA at prediction time" width="600"/>
+<img src="src/diva_inference.png" alt="DIVA at prediction time" width="480"/>
 
 At prediction time, DIVA extracts C-Measures from potentially poisoned data, and uses it to estimate the clean accuracy.
 A dataset is flagged as poisoned if the discrepancy exceeds a certain threshold.
 
-<img src="diva_full.svg" alt="DIVA framework" width="600"/>
+<img src="src/diva_full.png" alt="DIVA framework" width="480"/>
 
-DIVA constructs a meta-database by extracting C-Measures from generated datasets $G^{(i)}$. By generating multiple poisoned datasets $G^{(i)}_{\text{tr;}p_j}$ with poisoned classifiers $g^{(i)}_{p_j}$ from the training split $G^{(i)}_{\text{tr;clean}}$, the meta-dataset collects multiple C-Measures and accuracy pairs for each $G^{(i)}$.
+DIVA pre-trains a meta-learner as follows:
+
+1. Collect multiple datasets; One of them is the input dataset here.
+2. Split each dataset into training and testing sets and generate multiple poisoned datasets from the training set.
+3. Create a meta-database by extracting C-Measures from the clean and poisoned datasets as features and using the classifiers' accuracies as targets.
+4. Train the meta-learner.
 
 ## Install dependencies
 
